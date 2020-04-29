@@ -1,8 +1,9 @@
-import setuptools
+from setuptools import setup, find_packages
 
-setuptools.setup(
+setup(
     name = "wkscraper",
     version = "0.0.1",
     description = "Wikipedia Scraper",
-    author = "T.Furukawa"
+    author = "T.Furukawa",
+    packages = find_packages("wkscraper")
 )
