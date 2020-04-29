@@ -5,5 +5,6 @@ setup(
     version = "0.0.1",
     description = "Wikipedia Scraper",
     author = "T.Furukawa",
-    packages = find_packages("wkscraper")
+    packages = find_packages("wkscraper"),
+    url = "https://github.com/tfull/wikipedia_scraper"
 )
