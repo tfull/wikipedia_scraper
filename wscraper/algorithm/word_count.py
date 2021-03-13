@@ -25,7 +25,7 @@ class WordCount:
                         self.model[word] += 1
 
     def save(self, path):
-        pd.DataFrame(self.model.items(), columns = ["word", "count"]).to_csv(path)
+        pd.DataFrame(self.model.items(), columns = ["word", "count"]).to_csv(path, index = False)
 
     def load(self, path):
         self.model = {}
