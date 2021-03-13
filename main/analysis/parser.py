@@ -21,20 +21,23 @@ RE_LIST       = re.compile(r"\* ")
 class Parser:
 
     @classmethod
-    def to_entry_or_redirection(cls, page, *, language = "ja"):
+    def to_model(cls, page, *, language = "ja", entry_only = False):
         title = page.find("title").text
 
         language_class = Supervisor.get_language_class(language)
 
         for rm in language_class.exclusive_title:
-            if title[:len(rm) + 1] == rm + ":":
+            if title.startswith(rm + ":"):
                 return None
 
         redirect = page.find("redirect")
 
         if redirect is not None:
-            target = redirect.attrib["title"]
-            return Redirection(source = title, target = target)
+            if entry_only:
+                return None
+            else:
+                target = redirect.attrib["title"]
+                return Redirection(source = title, target = target)
 
         revision = page.find("revision")
         text = revision.find("text").text
@@ -44,7 +47,7 @@ class Parser:
 
         text = "".join(filter(lambda c: ord(c) < 0x10000, text))
 
-        return Entry(title = title, document = text)
+        return Entry(title = title, mediawiki = text)
 
     @classmethod
     def interpret_mediawiki(cls, mediawiki, *, language = "ja"):

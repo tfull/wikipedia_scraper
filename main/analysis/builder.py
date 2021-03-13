@@ -8,7 +8,7 @@ import xml.etree.ElementTree
 class Builder:
 
     @classmethod
-    def split(cls, xml_path, output_directory, *, chunk = 10000):
+    def split_to_xmls(cls, xml_path, output_directory, *, chunk = 10000):
         re_start = re.compile(r"<page>")
         re_end = re.compile(r"</page>")
 
@@ -32,14 +32,14 @@ class Builder:
                     item_n += 1
 
                     if item_n % chunk == 0:
-                        cls.write(body, "{0}/{1:04d}.xml".format(output_directory, file_id))
+                        cls.save_xml(body, "{0}/{1:04d}.xml".format(output_directory, file_id))
                         sys.stdout.write("\033[2K\033[G{0:04d}.xml".format(file_id))
                         sys.stdout.flush()
                         body = []
                         file_id += 1
 
         if len(body) > 0:
-            cls.write(body, "{0}/{1:04d}.xml".format(output_directory, file_id))
+            cls.save_xml(body, "{0}/{1:04d}.xml".format(output_directory, file_id))
             sys.stdout.write("\033[2K\033[G{0:04d}.xml".format(file_id))
             sys.stdout.flush()
         else:
@@ -48,8 +48,8 @@ class Builder:
         sys.stdout.write("\033[2K\033[GCompleted: {0} items in {1} files\n".format(item_n, file_id))
 
     @classmethod
-    def write(cls, body, path):
-        with open(path, "w") as f:
+    def save_xml(cls, body, xml_path):
+        with open(xml_path, "w") as f:
             f.write("<wikipedia>\n")
 
             for line in body:
@@ -58,8 +58,8 @@ class Builder:
             f.write("</wikipedia>\n")
 
     @classmethod
-    def load_xml(cls, path):
-        with open(path, "r") as f:
+    def load_xml(cls, xml_path):
+        with open(xml_path, "r") as f:
             parser = xml.etree.ElementTree.XMLParser()
 
             for line in f:
@@ -68,6 +68,17 @@ class Builder:
             return parser.close()
 
     @classmethod
-    def get_pages(cls, path):
-        tree = cls.load_xml(path)
+    def list_pages(cls, xml_path):
+        tree = cls.load_xml(xml_path)
         return tree.findall("page")
+
+    @classmethod
+    def iterate_page_from_directory(cls, directory):
+        for xml in sorted(glob.glob(directory + "/*.xml")):
+            for page in cls.list_pages(xml):
+                yield page
+
+    @classmethod
+    def iterate_pages_from_directory(cls, directory):
+        for xml in sorted(glob.glob(directory + "/*.xml")):
+            yield (xml.split("/")[-1][:-4], cls.list_pages(xml))

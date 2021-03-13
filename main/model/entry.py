@@ -1,5 +1,5 @@
 class Entry:
 
-    def __init__(self, title, document):
+    def __init__(self, title, mediawiki):
         self.title = title
-        self.document = document
+        self.mediawiki = mediawiki

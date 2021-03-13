@@ -91,7 +91,7 @@ class Japanese:
                     sentences.append(document.strip("\n"))
                 break
 
-            sentence = document[:index] + "。"
+            sentence = document[:index + 1]
             sentences.append(sentence.strip("\n"))
             document = document[index + 1:]
 
