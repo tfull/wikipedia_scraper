@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "wkscraper",
+    name = "wscraper",
     version = "0.0.1",
     description = "Wikipedia Scraper",
     author = "T.Furukawa",
