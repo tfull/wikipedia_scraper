@@ -1,6 +1,8 @@
+import glob
 from gensim.models.word2vec import Word2Vec
 
 from ..analysis import *
+from ..utility import *
 
 
 class Word2VecHandler:
@@ -8,7 +10,7 @@ class Word2VecHandler:
     @classmethod
     def prepare(cls, xml_directory, txt_directory):
         with FileWriter(txt_directory, "{:06d}.txt", 10000) as writer:
-            for page in Builder.iterate_page_from_directory(xml_directory):
+            for page in PageIterator(xml_directory):
                 Parser.to_model(page, language = language, entry_only = True)
 
                 if entry is None:
@@ -18,26 +20,27 @@ class Word2VecHandler:
 
                 writer.write("\n".join(lines), len(lines))
 
-    def __init__(self):
-        self.model = None
+    @classmethod
+    def new(cls, language, tokenizer, txt_directory):
+        model = None
 
-    def create(self, language, tokenizer, xml_directory, txt_directory):
-        for page in Builder.iterate_page_from_directory(xml_directory):
-            entry = Parser.to_model(page, language = language, entry_only = True)
+        for txt_file in sorted(glob.glob(txt_directory + "/*.txt")):
+            sentences = [tokenizer.rstrip("\n").split(" ") for line in txt_file]
 
-            if entry is None:
-                continue
-
-            sentences = [tokenizer.split(sentence) for sentence in Parser.to_sentences(entry.mediawiki)]
-
-            if self.model is None:
-                self.model = Word2Vec(sentences, min_count = 1)
+            if model is None:
+                model = Word2Vec(sentences, min_count = 1)
             else:
-                self.model.build_vocab(sentences, update = True)
-                self.model.train(sentences, total_examples = self.model.corpus_count, epochs = self.model.epochs)
+                model.build_vocab(sentences, update = True)
+                model.train(sentences, total_examples = model.corpus_count, epochs = model.epochs)
+
+        return cls(model)
+
+    @classmethod
+    def load(cls, path):
+        return cls(Word2Vec.load(path))
+
+    def __init__(self, model):
+        self.model = model
 
     def save(self, path):
         self.model.save(path)
-
-    def load(self, path):
-        self.model = Word2Vec.load(path)

@@ -41,29 +41,3 @@ class Builder:
                         body = []
 
             progress.set_postfix(OrderedDict(entry = writer.total_count, page = writer.file_count))
-
-    @classmethod
-    def load_xml(cls, xml_path):
-        with open(xml_path, "r") as f:
-            parser = xml.etree.ElementTree.XMLParser()
-
-            for line in f:
-                parser.feed(line)
-
-            return parser.close()
-
-    @classmethod
-    def list_pages(cls, xml_path):
-        tree = cls.load_xml(xml_path)
-        return tree.findall("page")
-
-    @classmethod
-    def iterate_page_from_directory(cls, directory):
-        for xml in sorted(glob.glob(directory + "/*.xml")):
-            for page in cls.list_pages(xml):
-                yield page
-
-    @classmethod
-    def iterate_pages_from_directory(cls, directory):
-        for xml in sorted(glob.glob(directory + "/*.xml")):
-            yield (xml.split("/")[-1][:-4], cls.list_pages(xml))

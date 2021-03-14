@@ -10,8 +10,7 @@ from wscraper.tokenizer.mecab_tokenizer import *
 
 
 def main(directory, output):
-    wc = WordCount()
-    wc.create(directory, Japanese, MecabTokenizer())
+    wc = WordCount.new(Japanese, MecabTokenizer(), directory)
     wc.save(output)
 
 
