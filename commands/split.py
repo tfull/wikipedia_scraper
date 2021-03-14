@@ -4,11 +4,11 @@ import argparse
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-from main.core import *
+from wscraper.analysis import *
 
 
 def main(xml_path, output_directory):
-    Builder.split(xml_path, output_directory)
+    Builder.split_to_xmls(xml_path, output_directory)
 
 
 if __name__ == '__main__':

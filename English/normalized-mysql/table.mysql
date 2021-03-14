@@ -1,3 +1,0 @@
-create table entries (title varchar(256), document text, link text, category text, key title (title)) default charset utf8;
-create table redirections (origin varchar(256), target varchar(256), key origin (origin), key target (target)) default charset utf8;
-create table categories (title varchar(256), category varchar(256)) default charset utf8;

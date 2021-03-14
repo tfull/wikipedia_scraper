@@ -1,6 +1,7 @@
 from ..analysis import *
 
 import pandas as pd
+import tqdm
 
 
 class WordCount:
@@ -8,16 +9,16 @@ class WordCount:
     def __init__(self):
         self.model = None
 
-    def create(self, xml_directory, tokenizer):
+    def create(self, xml_directory, language, tokenizer):
         self.model = {}
 
-        for page in Builder.iterate_page_from_directory(xml_directory):
-            entry = Parser.to_model(page, entry_only = True)
+        for page in tqdm.tqdm(Builder.iterate_page_from_directory(xml_directory)):
+            entry = Parser.to_model(page, language = language, entry_only = True)
 
             if entry is None:
                 continue
 
-            for sentence in Parser.to_sentences(entry.mediawiki):
+            for sentence in Parser.to_sentences(entry.mediawiki, language = language):
                 for word in tokenizer.split(sentence):
                     if word not in self.model:
                         self.model[word] = 1

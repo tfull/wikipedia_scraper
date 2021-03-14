@@ -1,4 +1,0 @@
-host localhost
-db your_db_name
-user your_mysql_user
-passwd your_mysql_password
