@@ -1,36 +1,43 @@
 from ..analysis import *
 
 import pandas as pd
+import tqdm
 
 
 class WordCount:
 
-    def __init__(self):
-        self.model = None
+    @classmethod
+    def new(cls, language, tokenizer, xml_directory):
+        model = {}
 
-    def create(self, xml_directory, tokenizer):
-        self.model = {}
-
-        for page in Builder.iterate_page_from_directory(xml_directory):
-            entry = Parser.to_model(page, entry_only = True)
+        for page in tqdm.tqdm(PageIterator(xml_directory)):
+            entry = Parser.to_model(page, language = language, entry_only = True)
 
             if entry is None:
                 continue
 
-            for sentence in Parser.to_sentences(entry.mediawiki):
+            for sentence in Parser.to_sentences(entry.mediawiki, language = language):
                 for word in tokenizer.split(sentence):
-                    if word not in self.model:
-                        self.model[word] = 1
+                    if word not in model:
+                        model[word] = 1
                     else:
-                        self.model[word] += 1
+                        model[word] += 1
 
-    def save(self, path):
-        pd.DataFrame(self.model.items(), columns = ["word", "count"]).to_csv(path)
+        return cls(model)
 
-    def load(self, path):
-        self.model = {}
+    @classmethod
+    def load(cls, path):
+        model = {}
 
         df = pd.read_csv(path)
 
         for _, row in df.iterrows():
-            self.model[row.word] = row.count
+            model[row.word] = row.count
+
+        return cls(model)
+
+    def __init__(self, model):
+        self.model = model
+
+    def save(self, path):
+        pd.DataFrame(self.model.items(), columns = ["word", "count"]).to_csv(path, index = False)
