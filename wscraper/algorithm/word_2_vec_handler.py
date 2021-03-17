@@ -9,7 +9,7 @@ from ..utility import *
 class Word2VecHandler:
 
     @classmethod
-    def prepare(cls, language, tokenizer, xml_directory, txt_directory):
+    def prepare(cls, config):
         os.makedirs(txt_directory)
 
         with FileWriter(txt_directory, "{:06d}.txt", 10000) as writer:
@@ -24,7 +24,7 @@ class Word2VecHandler:
                 writer.write("\n".join(lines), len(lines))
 
     @classmethod
-    def new(cls, txt_directory):
+    def new(cls, name):
         model = Word2Vec(PathLineSentences(txt_directory), min_count = 1)
         return cls(model)
 
