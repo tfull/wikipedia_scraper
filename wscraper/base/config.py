@@ -9,16 +9,34 @@ class Config:
 
     root_template = {
         "wikipedia_xml": None,
-        "worker": 1
+        "worker": 1,
+        "language": None
     }
 
     template = {
-        "wikipedia_xml": None
+        "wikipedia_xml": None,
+        "worker": None,
+        "language": None,
+        "tokenizer": {}, # atom
+        "model": {} # name and model
     }
 
     parameter_list = [
-        ("wikipedia_xml", 1),
-        ("worker", 2)
+        "wikipedia_xml",
+        "worker",
+        "language",
+        "tokenizer",
+        "model"
+    ]
+
+    available_languages = [
+        "japanese",
+        "english"
+    ]
+
+    available_algorithms = [
+        "word2vec",
+        "word_frequency"
     ]
 
     @classmethod
@@ -103,6 +121,7 @@ class Config:
             if name is None:
                 raise WsError("Config: Current name is not set.")
 
+        self.name = name
         self.config = self.load_config_by_name(name)
 
         for key, value in self.load_root_config().items():
@@ -111,14 +130,86 @@ class Config:
 
         self.status = self.load_status_by_name(name)
 
+    def save(self):
+        path = os.path.join(Constant.root_directory, self.name, "config.yml")
+        FileManager.save_yaml(path, self.config)
+
     def print_parameters(self):
-        print(self.config)
+        for param in self.parameter_list:
+            print(param + ":", self.config[param])
 
-    def get_parameter(self, key):
-        if key not in self.config:
-            raise WsError(f"Config: Key \"{key}\" does not exist.")
+    def get_parameter(self, key, *, must = False):
+        data = self.config
 
-        return self.config[key]
+        for k in key.split("."):
+            if data is not None:
+                data = data.get(k)
 
-    def set_parameter(self, key, value):
-        pass
+        if data is None and must:
+            raise WsError(f"Config: Key \"{key}\" must exist but None.")
+
+        return data
+
+    def set_wikipedia_xml(self, name):
+        self.config["wikipedia_xml"] = name
+        self.save()
+
+    def delete_wikipedia_xml(self):
+        self.config["wikipedia_xml"] = None
+        self.save()
+
+    def set_worker(self, number):
+        if not (type(number) == int and number in range(1, 64 + 1)):
+            raise WsError(f"Config: Argument worker must satisfy 1 <= worker <= 64")
+
+        self.config["worker"] = number
+        self.save()
+
+    def delete_worker(self):
+        self.config["worker"] = None
+        self.save()
+
+    def set_language(self, language):
+        self.config["language"] = language
+        self.save()
+
+    def delete_language(self):
+        self.config["language"] = None
+        self.save()
+
+    def model_new(self, name, algorithm, arguments = None):
+        if name in self.config["model"]:
+            raise WsError(f"Config: Model \"{name}\" already exists.")
+
+        if algorithm not in self.available_algorithms:
+            raise WsError(f"Config: Algorithm \"{algorithm}\" is not supported.")
+
+        if arguments is None:
+            arguments = {}
+
+        self.config["model"][name] = {
+            "algorithm": algorithm,
+            "arguments": arguments
+        }
+
+        self.save()
+
+    def model_delete(self, name):
+        if name not in self.config["model"]:
+            raise WsError(f"Config: Model \"{name}\" does not exist.")
+
+        del self.config["model"][name]
+
+        self.save()
+
+    def set_tokenizer(self, name, arguments):
+        self.config["tokenizer"] = {
+            "name": name,
+            "arguments": arguments
+        }
+
+        self.save()
+
+    def delete_tokenizer(self):
+        self.config["tokenizer"] = {}
+        self.save()
