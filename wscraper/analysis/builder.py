@@ -12,32 +12,31 @@ from collections import OrderedDict
 class Builder:
 
     @classmethod
-    def split(cls, name, *, reset = False, chunk = 10000):
+    def split(cls, name = None, *, reset = False, chunk = 10000):
         if not (type(chunk) == int and chunk in range(100, 10 ** 7 + 1)):
-            raise WsError("split: Argument chunk must satisfy 100 <= chunk <= 10 ** 7.")
+            raise WsError("Argument chunk must satisfy 100 <= chunk <= 10 ** 7.")
 
         config = Config(name)
-        wikipedia_name = config.get_parameter("wikipedia", must = True)
-        xml_directory = os.path.join(Constant.wikipedia_directory, wikipedia_name)
+        wikipedia_xml = config.get_wikipedia_xml()
+        wikipedia_xml_directory = config.get_wikipedia_xml_directory()
 
-        wikipedia_xml = os.path.join(Constant.wikipedia_directory, f"{wikipedia_name}.xml")
-
-        if os.path.isfile(wikipedia_xml):
-            raise WsError(f"split: Wikipedia XML file {wikipedia_name}.xml does not exist in {Constant.wikipedia_directory}.")
-
-        if os.path.isdir(xml_directory):
+        if os.path.isdir(wikipedia_xml_directory):
             if not reset:
+                sys.stdout.write("Split XML files are already exist. Skipping.\n")
                 return
             else:
-                for path in glob.glob(os.path.join(xml_directory, "*.xml")):
+                sys.stdout.write("Split XML files are exist. Removing.\n")
+                for path in glob.glob(os.path.join(wikipedia_xml_directory, "*.xml")):
                     os.remove(path)
         else:
-            os.makedirs(xml_directory)
+            os.makedirs(wikipedia_xml_directory)
 
-        cls.split_to_xmls(wikipedia_xml, xml_directory, chunk)
+        sys.stdout.write(f"Split Wikipedia XML file {wikipedia_xml} to {wikipedia_xml_directory}.\n")
+        cls.split_to_xmls(wikipedia_xml, wikipedia_xml_directory, chunk = chunk)
+        sys.stdout.write("Done!\n")
 
     @classmethod
-    def split_to_xmls(cls, xml_path, output_directory, chunk = 10000):
+    def split_to_xmls(cls, xml_path, output_directory, *, chunk = 10000):
         re_start = re.compile(r"<page>")
         re_end = re.compile(r"</page>")
 

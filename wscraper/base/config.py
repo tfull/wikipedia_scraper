@@ -349,3 +349,17 @@ class Config:
     def unset_tokenizer(self):
         self.config["tokenizer"] = {}
         self.save()
+
+    def get_wikipedia_xml(self, must = True):
+        wikipedia_name = self.get_parameter("wikipedia", must = True)
+        wikipedia_xml = os.path.join(Constant.wikipedia_directory, wikipedia_name + ".xml")
+
+        if not os.path.isfile(wikipedia_xml) and must:
+            raise WsError(f"No such file {wikipedia_xml}.")
+
+        return wikipedia_xml
+
+    def get_wikipedia_xml_directory(self):
+        wikipedia_name = self.get_parameter("wikipedia", must = True)
+        wikipedia_xml_directory = os.path.join(Constant.wikipedia_directory, wikipedia_name)
+        return wikipedia_xml_directory
