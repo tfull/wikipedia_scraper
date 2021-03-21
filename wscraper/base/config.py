@@ -14,7 +14,8 @@ class Config:
     template_root_config = {
         "wikipedia": None,
         "worker": 1,
-        "language": None
+        "language": None,
+        "page_chunk": 10000
     }
 
     template_config = {
@@ -23,6 +24,10 @@ class Config:
         "language": None,
         "tokenizer": {},
         "model": {}
+    }
+
+    template_root_status = {
+        "current": None
     }
 
     parameter_list = [
@@ -46,7 +51,9 @@ class Config:
     @classmethod
     def check_root_directory_exists(cls):
         if not os.path.isdir(Constant.root_directory):
-            raise WsError(f"Root directory {Constant.root_directory} does not exist.")
+            message = f"Root directory {Constant.root_directory} does not exist."
+            message += " Did you run `wscraper initialize`?"
+            raise WsError(message)
 
         if not os.path.isfile(Constant.root_config):
             raise WsError(f"Root config file {Constant.root_config} does not exist.")
@@ -101,26 +108,6 @@ class Config:
             sys.stdout.write(f"Task directory {Constant.task_directory} was created.\n")
 
     @classmethod
-    def command_import(cls, wikipedia_xml, *, name = None, copy = False):
-        cls.check_root_directory_exists()
-
-        if not wikipedia_xml.endswith(".xml"):
-            raise WsError("XML file required.")
-
-        if name is None:
-            target = Constant.wikipedia_directory
-        else:
-            target = os.path.join(Constant.wikipedia_directory, name + ".xml")
-
-        if copy:
-            sys.stdout.write(f"File is copying from {wikipedia_xml} to {new_path}.\n")
-            new_path = shutil.copy(wikipedia_xml, target)
-            sys.stdout.write(f"File was copied {wikipedia_xml} to {new_path}.\n")
-        else:
-            new_path = shutil.move(wikipedia_xml, target)
-            sys.stdout.write(f"File was moved {wikipedia_xml} to {new_path}.\n")
-
-    @classmethod
     def command_new(cls, name):
         cls.check_root_directory_exists()
 
@@ -160,10 +147,11 @@ class Config:
 
     @classmethod
     def load_root_config(cls):
-        if not os.path.isfile(Constant.root_config):
-            raise WsError(f"Root config {Constant.root_config} does not exist.")
-
         return FileManager.load_yaml(Constant.root_config)
+
+    @classmethod
+    def load_root_status(cls):
+        return FileManager.load_yaml(Constant.root_status)
 
     @classmethod
     def load_config_by_name(cls, name):
@@ -196,10 +184,14 @@ class Config:
         self.config = self.load_config_by_name(name)
         self.root_config = self.load_root_config()
         self.status = self.load_status_by_name(name)
+        self.root_status = self.load_root_status()
 
     def save(self):
         path = os.path.join(Constant.task_directory, self.name, "config.yml")
         FileManager.save_yaml(path, self.config)
+
+    def save_root(self):
+        FileManager.save_yaml(Constant.root_config, self.root_config)
 
     def print_parameters(self):
         for key in self.parameter_list:
