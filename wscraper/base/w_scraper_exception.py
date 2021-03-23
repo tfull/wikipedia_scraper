@@ -1,0 +1,2 @@
+class WScraperException(Exception):
+    pass

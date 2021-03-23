@@ -16,10 +16,10 @@ class Builder:
         Config.check_root_directory_exists()
 
         if not wikipedia_xml.endswith(".xml"):
-            raise WsError("XML file required.")
+            raise WScraperException("XML file required.")
 
         if move and copy:
-            raise WsError("Both move and copy are True. Nothing or one should be True.")
+            raise WScraperException("Both move and copy are True. Nothing or one should be True.")
 
         if wikipedia_name is None:
             wikipedia_name = os.path.basename(wikipedia_xml)[:-4]
@@ -52,7 +52,7 @@ class Builder:
     @classmethod
     def split_to_xmls(cls, xml_path, output_directory, *, chunk = 10000):
         if not (type(chunk) == int and chunk in range(100, 10 ** 7 + 1)):
-            raise WsError("Config page_chunk must satisfy 100 <= chunk <= 10 ** 7.")
+            raise WScraperException("Config page_chunk must satisfy 100 <= chunk <= 10 ** 7.")
 
         re_start = re.compile(r"<page>")
         re_end = re.compile(r"</page>")

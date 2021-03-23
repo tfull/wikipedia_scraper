@@ -1,2 +1,0 @@
-class WsError(Exception):
-    pass

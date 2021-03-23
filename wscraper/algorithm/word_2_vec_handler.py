@@ -5,6 +5,8 @@ from gensim.models.word2vec import Word2Vec, PathLineSentences
 from ..analysis import *
 from ..utility import *
 from ..base import *
+from ..tokenizer import *
+from ..language import *
 
 
 class Word2VecHandler:
@@ -16,12 +18,12 @@ class Word2VecHandler:
         if config is None:
             config = Config(task_name)
 
-        input_property = config.get_parameter(f"model.{model_name}.")
-        algorithm = input_property["algorithm"]
-        arguments = input_property["arguments"]
+        arguments = config.get_parameter(f"model.{model_name}.{'arguments'}", must = True)
 
         tokenizer_property = config.get_tokenizer(must = True)
-        tokenizer = Tokenizer.get(tokenizer_property)
+        tokenizer = Tokenizer.instantiate(tokenizer_property)
+
+        language = Language.get_class(config.get_language(must = True))
 
         xml_directory = config.get_wikipedia_xml_directory()
         pls_directory = config.make_workspace("pls")
@@ -42,16 +44,16 @@ class Word2VecHandler:
                 sys.stdout.write("Removed.\n")
 
         if pls_flag:
-            create_path_line_sentences(xml_directory, pls_directory)
+            cls.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer)
 
         sys.stdout.write("Creating Word2Vec model.\n")
-        model_path = os.path.join(model_directory, model_name + model_file_suffix)
-        model = create_model(pls_directory)
+        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
+        model = cls.create_model(pls_directory)
         model.save(model_path)
         sys.stdout.write(f"Word2Vec model was saved to {model_path}.\n")
 
     @classmethod
-    def create_path_line_sentences(cls, xml_directory, pls_directory):
+    def create_path_line_sentences(cls, xml_directory, pls_directory, language, tokenizer):
         with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer:
             for page in PageIterator(xml_directory):
                 entry = Parser.to_model(page, language = language, entry_only = True)
@@ -64,8 +66,11 @@ class Word2VecHandler:
                 writer.write("\n".join(lines), len(lines))
 
     @classmethod
-    def create_model(cls, pls_directory):
-        model = Word2Vec(PathLineSentences(pls_directory), min_count = 1)
+    def create_model(cls, pls_directory, ** arguments):
+        if "min_count" not in arguments:
+            arguments["min_count"] = 1
+
+        model = Word2Vec(PathLineSentences(pls_directory), ** arguments)
         return model
 
     @classmethod

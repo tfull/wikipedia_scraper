@@ -1,7 +1,10 @@
+from ..base import *
+
+
 class Algorithm:
 
     @classmethod
-    def build(args, task_name = None, model_name_list = None, reset = False):
+    def command_build(cls, task_name = None, model_name_list = None, reset = False):
         from ..base import Config
 
         config = Config(task_name)
@@ -16,26 +19,24 @@ class Algorithm:
                 no_such_model_name_list.append(model)
 
         if len(no_such_model_name_list) > 0:
-            raise WsError(f"No such model name {", ".join(no_such_model_name_list)}.")
+            raise WScraperConfigError(f"No such model name {', '.join(no_such_model_name_list)}.")
 
         for model_name in model_name_list:
             model_item = config.get_parameter(f"model.{model_name}.")
             cls.build_sub(config, model_name, reset)
 
     @classmethod
-    def build_sub(config, model_name, reset):
-        model = config.get_parameter("model")
-        algorithm = model["algorithm"]
-        arguments = model["arguments"]
+    def build_sub(cls, config, model_name, reset):
+        algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}")
 
         if algorithm == "word2vec":
             from .word_2_vec_handler import Word2VecHandler
-            Word2VecHandler(task_name = None, model_name = model_name, config = config, reset = reset)
+            Word2VecHandler.build(task_name = None, model_name = model_name, config = config, reset = reset)
         elif algorithm == "word_frequency":
             from .word_frequency import WordFrequency
-            WordFrequency(task_name = None, model_name = model_name, config = config, reset = reset)
+            WordFrequency.build(task_name = None, model_name = model_name, config = config, reset = reset)
         else:
-            raise WsError(f"Algorithm {algorithm} is not implemented.\n")
+            raise WScraperAlgorithmError(f"Algorithm {algorithm} is not implemented.\n")
 
 
 class WScraperAlgorithmError(Exception):

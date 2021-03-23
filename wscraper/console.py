@@ -27,6 +27,7 @@ Command:
         unset parameters
     wscraper model new [model_name] [algorithm_name]
     wscraper model delete [model_name]
+    wscraper model build [model_name list]
     wscraper tokenizer [tokenizer_name]
     wscraper root status
     wscraper root set
@@ -198,7 +199,7 @@ def command_model_build(args):
 
     from .algorithm import Algorithm
 
-    Algorithm.command_build(args.name)
+    Algorithm.command_build(model_name_list = args.name, reset = args.reset)
 
 
 def command_root(args):

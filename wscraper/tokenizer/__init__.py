@@ -1,14 +1,19 @@
 class Tokenizer:
 
     @classmethod
-    def get_by_property(tokenizer_property):
+    def instantiate(cls, tokenizer_property):
         name = tokenizer_property["name"]
+        arguments = tokenizer_property["arguments"]
 
         if name == "mecab":
             from .mecab_tokenizer import MecabTokenizer
-            return MecabTokenizer(tokenizer_property["arguments"])
+            return MecabTokenizer(** arguments)
         elif name == "janome":
             from .janome_tokenizer import JanomeTokenizer
-            return JanomeTokenizer(tokenizer_property[""])
+            return JanomeTokenizer(** arguments)
         else:
-            raise WsError(f"No such tokenizer {name}.")
+            raise WScraperTokenizerError(f"No such tokenizer {name}.")
+
+
+class WScraperTokenizerError(Exception):
+    pass
