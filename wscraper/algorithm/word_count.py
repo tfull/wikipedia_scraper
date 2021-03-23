@@ -7,6 +7,10 @@ import tqdm
 class WordCount:
 
     @classmethod
+    def build(cls):
+        pass
+
+    @classmethod
     def new(cls, language, tokenizer, xml_directory):
         model = {}
 

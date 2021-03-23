@@ -146,6 +146,12 @@ class Config:
         sys.stdout.write(f"Task switched to {name}.\n")
 
     @classmethod
+    def command_status(cls):
+        cls.check_root_directory_exists()
+
+        Config().print_status()
+
+    @classmethod
     def load_root_config(cls):
         return FileManager.load_yaml(Constant.root_config)
 
@@ -185,15 +191,19 @@ class Config:
         self.root_config = self.load_root_config()
         self.status = self.load_status_by_name(name)
         self.root_status = self.load_root_status()
+        self.this_directory = os.path.join(Constant.task_directory, self.name)
 
     def save(self):
-        path = os.path.join(Constant.task_directory, self.name, "config.yml")
+        path = os.path.join(self.this_directory, "config.yml")
         FileManager.save_yaml(path, self.config)
 
+    """
     def save_root(self):
         FileManager.save_yaml(Constant.root_config, self.root_config)
+    """
 
-    def print_parameters(self):
+    def print_status(self):
+        # TODO strict yaml
         for key in self.parameter_list:
             data = self.config[key]
 
@@ -330,6 +340,25 @@ class Config:
         for key in arguments:
             self.config["model"][name]["arguments"][key] = arguments[key]
 
+    def get_model(self, name = None, must = False):
+        if name is not None:
+            return self.get_parameter(f"model.{name}", must = must)
+        else:
+            return self.get_parameter("model", must = must)
+
+    def model_name_exists(self, name):
+        item = self.get_parameter("model", must = True)
+        return name in item
+
+    def confirm_model_names_exist(self, model_name_list):
+        no_existing_list = []
+
+        item = self.get_parameter("model", must = True)
+
+        for model_name in model_name_list:
+            if model_name not in item:
+                no_existing_list.append()
+
     def set_tokenizer(self, name, arguments):
         self.config["tokenizer"] = {
             "name": name,
@@ -342,16 +371,33 @@ class Config:
         self.config["tokenizer"] = {}
         self.save()
 
-    def get_wikipedia_xml(self, must = True):
+    def get_tokenizer(self, must):
+        return self.get_parameter("tokenizer", must = must)
+
+    def get_wikipedia_xml(self, *, must = True):
         wikipedia_name = self.get_parameter("wikipedia", must = True)
         wikipedia_xml = os.path.join(Constant.wikipedia_directory, wikipedia_name + ".xml")
 
-        if not os.path.isfile(wikipedia_xml) and must:
+        if must and not os.path.isfile(wikipedia_xml):
             raise WsError(f"No such file {wikipedia_xml}.")
 
         return wikipedia_xml
 
-    def get_wikipedia_xml_directory(self):
+    def get_wikipedia_xml_directory(self, *, must = True, optional = False):
         wikipedia_name = self.get_parameter("wikipedia", must = True)
         wikipedia_xml_directory = os.path.join(Constant.wikipedia_directory, wikipedia_name)
+
+        if must and not os.path.isdir(wikipedia_xml_directory):
+            raise WsError(f"No such directory {wikipedia_xml_directory}.")
+
         return wikipedia_xml_directory
+
+    def make_workspace(self, workspace_name, exist_ok = True):
+        target_directory = os.path.join(self.this_directory, "workspace", workspace_name)
+        os.makedirs(target_directory, exist_ok = exist_ok)
+        return target_directory
+
+    def make_model_directory(self, exist_ok = True):
+        model_directory = os.path.join(self.this_directory, "model")
+        os.makedirs(model_directory, exist_ok = exist_ok)
+        return model_directory

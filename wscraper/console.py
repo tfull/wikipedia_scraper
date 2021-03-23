@@ -101,3 +101,40 @@ def command_switch(args):
     args = parser.parse_args(args)
 
     Config.command_switch(args.name)
+
+
+def command_status(args):
+    if len(args) != 0:
+        sys.stderr.write("No arguments required for `wscraper status`.")
+        sys.exit(1)
+
+    Config.command_status()
+
+
+def command_model(args):
+    if len(args) == 0:
+        sys.stderr.write("Few arguments for wscraper model.\n")
+        sys.exit(1)
+
+    if args[0] == "build":
+        command_model_build(args[1:])
+    else:
+        sys.stderr.write(f"No such command {args[0]} for wscraper model.\n")
+        sys.exit(1)
+
+def command_model_build(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper import",
+        description = "Command `wscraper model build` creates models for preserved algorithms and arguments."
+    )
+
+    parser.add_argument("name", nargs="*", help = "model name. Nothing indicates all models.")
+    parser.add_argument("-r", "--reset", action = "store_true", help = "truncate existing models")
+
+    args = parser.parse_args(args)
+
+    from .algorithm.supervisor import Supervisor
+
+    return print(args.name)
+
+    Supervisor.command_build(args.name)
