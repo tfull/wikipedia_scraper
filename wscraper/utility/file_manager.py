@@ -23,3 +23,7 @@ class FileManager:
     def save_yaml(cls, path, data):
         with open(path, "w") as f:
             f.write(yaml.dump(data) + "\n")
+
+    @classmethod
+    def to_yaml_string(cls, value):
+        return yaml.dump(value)

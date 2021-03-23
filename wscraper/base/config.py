@@ -38,16 +38,6 @@ class Config:
         "model"
     ]
 
-    available_languages = [
-        "japanese",
-        "english"
-    ]
-
-    available_algorithms = [
-        "word2vec",
-        "word_frequency"
-    ]
-
     @classmethod
     def check_root_directory_exists(cls):
         if not os.path.isdir(Constant.root_directory):
@@ -65,7 +55,57 @@ class Config:
             raise WsError(f"Wikipedia directory {Constant.wikipedia_directory} does not exist.")
 
         if not os.path.isdir(Constant.task_directory):
-            raise WsError(f"Source directory {Constant.task_directory} does not exist.")
+            raise WsError(f"Task directory {Constant.task_directory} does not exist.")
+
+    @classmethod
+    def command_root_status(cls):
+        cls.check_root_directory_exists()
+
+        config = cls.load_root_config()
+        print(FileManager.to_yaml_string(config))
+
+    @classmethod
+    def command_root_set(cls, wikipedia, worker):
+        cls.check_root_directory_exists()
+
+        config = cls.load_root_config()
+
+        if wikipedia is not None:
+            if not os.path.isdir(os.path.join(Constant.wikipedia_directory, wikipedia)):
+                raise WsError(f"No such wikipedia resource {wikipedia}.")
+
+            config["wikipedia"] = wikipedia
+
+        if worker is not None:
+            if int(worker) not in range(1, 64 + 1):
+                raise WsError("Worker should be integer in range from 1 to 64.\n")
+
+            config["worker"] = worker
+
+        if language is not None:
+            if language not in Constant.available_languages:
+                raise WsError(f"language `{language}` is not supported")
+
+            config["language"] = language
+
+        FileManager.save_yaml(Constant.root_config, config)
+
+    @classmethod
+    def command_root_delete(cls, wikipedia, worker):
+        cls.check_root_directory_exists()
+
+        config = cls.load_root_config()
+
+        if wikipedia:
+            config["wikipedia"] = None
+
+        if worker:
+            config["worker"] = None
+
+        if language:
+            config["language"] = None
+
+        FileManager.save_yaml(Constant.root_config, config)
 
     @classmethod
     def command_initialize(cls):
@@ -91,10 +131,10 @@ class Config:
                 sys.stdout.write(f"Wikipedia directory {Constant.wikipedia_directory} was created.\n")
 
             if os.path.isdir(Constant.task_directory):
-                sys.stdout.write(f"Source directory {Constant.task_directory} already exists.\n")
+                sys.stdout.write(f"Task directory {Constant.task_directory} already exists.\n")
             else:
                 os.makedirs(Constant.task_directory)
-                sys.stdout.write(f"Source directory {Constant.task_directory} was created.\n")
+                sys.stdout.write(f"Task directory {Constant.task_directory} was created.\n")
         else:
             os.makedirs(Constant.root_directory)
             sys.stdout.write(f"Root directory {Constant.root_directory} was created.\n")
@@ -146,10 +186,41 @@ class Config:
         sys.stdout.write(f"Task switched to {name}.\n")
 
     @classmethod
+    def command_set(cls, wikipedia, worker, language):
+        cls.check_root_directory_exists()
+
+        config = Config()
+
+        if wikipedia is not None:
+            config.set_wikipedia(wikipedia)
+
+        if worker is not None:
+            config.set_worker(worker)
+
+        if language is not None:
+            config.set_language(language)
+
+        config.save()
+
+    @classmethod
     def command_status(cls):
         cls.check_root_directory_exists()
 
         Config().print_status()
+
+    @classmethod
+    def command_model_new(cls, name, algorithm):
+        cls.check_root_directory_exists()
+
+        config = Config()
+        config.create_model(name, algorithm)
+
+    @classmethod
+    def command_model_delete(cls, name):
+        cls.check_root_directory_exists()
+
+        config = Config()
+        config.delete_model(name)
 
     @classmethod
     def load_root_config(cls):
@@ -197,13 +268,11 @@ class Config:
         path = os.path.join(self.this_directory, "config.yml")
         FileManager.save_yaml(path, self.config)
 
-    """
-    def save_root(self):
-        FileManager.save_yaml(Constant.root_config, self.root_config)
-    """
-
     def print_status(self):
         # TODO strict yaml
+
+        print("current task:", self.name)
+
         for key in self.parameter_list:
             data = self.config[key]
 
@@ -228,15 +297,7 @@ class Config:
         return data
 
     def set_wikipedia(self, name = None):
-        wikipedia_list = []
-
-        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
-            base_name = os.path.basename(path)
-
-            if base_name[-4:] == ".xml":
-                wikipedia_list.append(base_name[:-4])
-            elif os.path.isdir(path):
-                wikipedia_list.append(base_name)
+        wikipedia_list = [os.path.basename(path) for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")) if os.path.isdir(path)]
 
         if len(wikipedia_list) == 0:
             raise WsError("There are no wikipedia resources.")
@@ -282,6 +343,9 @@ class Config:
         self.save()
 
     def set_language(self, language):
+        if language not in Constant.available_languages:
+            raise WsError(f"Language `{language}` is not supported.")
+
         self.config["language"] = language
         self.save()
 
@@ -293,7 +357,7 @@ class Config:
         if name in self.config["model"]:
             raise WsError(f"Model {name} already exists.")
 
-        if algorithm not in self.available_algorithms:
+        if algorithm not in Constant.available_algorithms:
             raise WsError(f"Algorithm {algorithm} is not supported.")
 
         if arguments is None:

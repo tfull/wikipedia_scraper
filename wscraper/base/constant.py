@@ -10,3 +10,13 @@ class Constant:
 
     task_directory = os.path.join(root_directory, "task")
     wikipedia_directory = os.path.join(root_directory, "wikipedia")
+
+    available_languages = [
+        "japanese",
+        "english"
+    ]
+
+    available_algorithms = [
+        "word2vec",
+        "word_frequency"
+    ]

@@ -33,11 +33,15 @@ def command():
     elif name == "new":
         command_new(args)
     elif name == "status":
-        pass
+        command_status(args)
     elif name == "switch":
-        pass
+        command_switch(args)
     elif name == "set":
-        pass
+        command_set(args)
+    elif name == "model":
+        command_model(args)
+    elif name == "root":
+        command_root(args)
     else:
         sys.stderr.write(f"No such command {name}.\n\n{help_string}")
         sys.exit(1)
@@ -114,17 +118,53 @@ def command_status(args):
 def command_model(args):
     if len(args) == 0:
         sys.stderr.write("Few arguments for wscraper model.\n")
+        sys.stderr.write("wscraper model [name] [arguments]\n")
         sys.exit(1)
 
-    if args[0] == "build":
-        command_model_build(args[1:])
+    name = args[0]
+    args = args[1:]
+
+    if name == "new":
+        command_model_new(args)
+    elif name == "delete":
+        command_model_delete(args)
+    elif name == "build":
+        command_model_build(args)
     else:
-        sys.stderr.write(f"No such command {args[0]} for wscraper model.\n")
+        sys.stderr.write(f"No such command {name} for wscraper model.\n")
         sys.exit(1)
+
+
+def command_model_new(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper model new",
+        description = "Command `wscraper model new` creates model status."
+    )
+
+    parser.add_argument("name", help = "your favorite name for model")
+    parser.add_argument("algorithm", help = "model algorithm")
+
+    args = parser.parse_args(args)
+
+    Config.command_model_new(args.name, args.algorithm)
+
+
+def command_model_delete(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper model delete",
+        description = "Command `wscraper model delete` creates model status."
+    )
+
+    parser.add_argument("name", help = "your favorite name for model")
+
+    args = parser.parse_args(args)
+
+    Config.command_model_delete(args.name)
+
 
 def command_model_build(args):
     parser = argparse.ArgumentParser(
-        prog = "wscraper import",
+        prog = "wscraper model build",
         description = "Command `wscraper model build` creates models for preserved algorithms and arguments."
     )
 
@@ -133,8 +173,80 @@ def command_model_build(args):
 
     args = parser.parse_args(args)
 
-    from .algorithm.supervisor import Supervisor
+    from .algorithm import Algorithm
 
-    return print(args.name)
+    Algorithm.command_build(args.name)
 
-    Supervisor.command_build(args.name)
+
+def command_root(args):
+    if len(args) == 0:
+        sys.stderr.write("wscraper root\n\n")
+        sys.stderr.write("  wscraper root status\n")
+        sys.stderr.write("  wscraper root set [options]\n")
+        sys.stderr.write("  wscraper root delete [options]\n")
+        sys.exit(1)
+
+    name = args[0]
+
+    if name == "status":
+        command_root_status(args[1:])
+    elif name == "set":
+        command_root_set(args[1:])
+    elif name == "delete":
+        command_root_delete(args[1:])
+    else:
+        sys.stderr.write(f"No such command {name}.\n")
+        sys.stderr.write("Command `wscraper root` takes `status`, `set` or `delete` for first argument.\n")
+        sys.exit(1)
+
+
+def command_root_status(args):
+    if len(args) != 0:
+        sys.stderr.write("No arguments required for `wscraper root status`.\n")
+        sys.exit(1)
+
+    Config.command_root_status()
+
+
+def command_root_set(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper root set",
+        description = "Command `wscraper root` describes or changes default value."
+    )
+
+    parser.add_argument("--wikipedia", help = "Wikipedia name")
+    parser.add_argument("--worker", help = "the number of threads for working")
+    parser.add_argument("--language", help = "Wikipedia language")
+
+    args = parser.parse_args(args)
+
+    Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+
+
+def command_root_delete(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper root delete",
+        description = "Command `wscraper root delete` deletes default config value."
+    )
+
+    parser.add_argument("--wikipedia", action = "store_true", help = "Wikipedia name")
+    parser.add_argument("--worker", action = "store_true", help = "the number of threads for working")
+
+    args = parser.parse_args(args)
+
+    Config.command_root_delete(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+
+
+def command_set(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper set",
+        description = "Command `wscraper set` sets value of parameter."
+    )
+
+    parser.add_argument("--wikipedia", help = "Wikipedia name")
+    parser.add_argument("--worker", help = "the number of threads for working")
+    parser.add_argument("--language", help = "Wikipedia language")
+
+    args = parser.parse_args(args)
+
+    Config.command_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
