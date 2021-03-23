@@ -10,13 +10,28 @@ wscraper
 Wikipedia Scraper
     language model using Wikipedia
 
-command:
+Command:
     wscraper initialize
         make directory ~/.wscraper and config file
     wscraper init
         same as initialize
-    wscraper new [name]
-        create pattern named [name]
+    wscraper new [task_name]
+        create pattern named [task_name]
+    wscraper status
+        describe status of current task
+    wscraper switch [task_name]
+        change task to [task_name]
+    wscraper set [options]
+        set parameters
+    wscraper unset [options]
+        unset parameters
+    wscraper model new [model_name] [algorithm_name]
+    wscraper model delete [model_name]
+    wscraper tokenizer [tokenizer_name]
+    wscraper root status
+    wscraper root set
+    wscraper root unset
+    wscraper wikipedia
 """
 
 
@@ -28,7 +43,9 @@ def command():
     name = sys.argv[1]
     args = sys.argv[2:]
 
-    if name in ["initialize", "init"]:
+    if name in ["help", "--help"]:
+        sys.stdout.write(help_string.lstrip())
+    elif name in ["initialize", "init"]:
         command_initialize(args)
     elif name == "new":
         command_new(args)
@@ -38,12 +55,18 @@ def command():
         command_switch(args)
     elif name == "set":
         command_set(args)
+    elif name == "unset":
+        command_unset(args)
     elif name == "model":
         command_model(args)
+    elif name == "tokenizer":
+        command_tokenizer(args)
     elif name == "root":
         command_root(args)
+    elif name == "wikipedia":
+        command_wikipedia(args)
     else:
-        sys.stderr.write(f"No such command {name}.\n\n{help_string}")
+        sys.stderr.write(f"No such command {name}.\n{help_string}")
         sys.exit(1)
 
 
@@ -223,7 +246,7 @@ def command_root_set(args):
     Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
 
 
-def command_root_delete(args):
+def command_root_unset(args):
     parser = argparse.ArgumentParser(
         prog = "wscraper root delete",
         description = "Command `wscraper root delete` deletes default config value."
@@ -231,10 +254,11 @@ def command_root_delete(args):
 
     parser.add_argument("--wikipedia", action = "store_true", help = "Wikipedia name")
     parser.add_argument("--worker", action = "store_true", help = "the number of threads for working")
+    parser.add_argument("--language", action = "store_true", help = "Wikipedia language")
 
     args = parser.parse_args(args)
 
-    Config.command_root_delete(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+    Config.command_root_unset(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
 
 
 def command_set(args):
@@ -250,3 +274,39 @@ def command_set(args):
     args = parser.parse_args(args)
 
     Config.command_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+
+
+def command_unset(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper unset",
+        description = "Command `wscraper unset` unsets value of parameter."
+    )
+
+    parser.add_argument("--wikipedia", action = "store_true", help = "Wikipedia name")
+    parser.add_argument("--worker", action = "store_true", help = "the number of threads for working")
+    parser.add_argument("--language", action = "store_true", help = "Wikipedia language")
+
+    args = parser.parse_args(args)
+
+    Config.command_unset(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+
+
+def command_tokenizer(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper tokenizer",
+        description = "Command `wscraper tokenizer` set tokenizer."
+    )
+
+    parser.add_argument("name", help = "tokenizer name")
+
+    args = parser.parse_args(args)
+
+    Config.command_tokenizer(args.name)
+
+
+def command_wikipedia(args):
+    if len(args) != 0:
+        sys.stderr.write("Command `wscraper wikipedia` requires no arguments.\n")
+        sys.exit(1)
+
+    Config.command_wikipedia()

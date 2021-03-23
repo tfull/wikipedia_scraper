@@ -80,7 +80,7 @@ class Config:
             if int(worker) not in range(1, 64 + 1):
                 raise WsError("Worker should be integer in range from 1 to 64.\n")
 
-            config["worker"] = worker
+            config["worker"] = int(worker)
 
         if language is not None:
             if language not in Constant.available_languages:
@@ -91,7 +91,7 @@ class Config:
         FileManager.save_yaml(Constant.root_config, config)
 
     @classmethod
-    def command_root_delete(cls, wikipedia, worker):
+    def command_root_unset(cls, wikipedia, worker):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -195,10 +195,27 @@ class Config:
             config.set_wikipedia(wikipedia)
 
         if worker is not None:
-            config.set_worker(worker)
+            config.set_worker(int(worker))
 
         if language is not None:
             config.set_language(language)
+
+        config.save()
+
+    @classmethod
+    def command_unset(cls, wikipedia, worker, language):
+        cls.check_root_directory_exists()
+
+        config = Config()
+
+        if wikipedia:
+            config.unset_wikipedia()
+
+        if worker:
+            config.unset_worker()
+
+        if language:
+            config.unset_language()
 
         config.save()
 
@@ -221,6 +238,34 @@ class Config:
 
         config = Config()
         config.delete_model(name)
+
+    @classmethod
+    def command_tokenizer(cls, name):
+        if name not in Constant.available_tokenizers:
+            raise WsError(f"No such tokenizer `{name}`.")
+
+        config = Config()
+        config.set_tokenizer(name)
+
+    @classmethod
+    def command_wikipedia(cls):
+        items = cls.list_wikipedia()
+        if len(items) == 0:
+            print("Available Wikipedia is nothing.")
+        else:
+            print("Available Wikipedia:")
+            for item in items:
+                print(f"  - {item}")
+
+    @classmethod
+    def list_wikipedia(cls):
+        result = []
+
+        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
+            if os.path.isdir(path):
+                result.append(os.path.basename(path))
+
+        return result
 
     @classmethod
     def load_root_config(cls):
@@ -297,7 +342,7 @@ class Config:
         return data
 
     def set_wikipedia(self, name = None):
-        wikipedia_list = [os.path.basename(path) for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")) if os.path.isdir(path)]
+        wikipedia_list = self.list_wikipedia()
 
         if len(wikipedia_list) == 0:
             raise WsError("There are no wikipedia resources.")
@@ -423,7 +468,10 @@ class Config:
             if model_name not in item:
                 no_existing_list.append()
 
-    def set_tokenizer(self, name, arguments):
+    def set_tokenizer(self, name, arguments = None):
+        if arguments is None:
+            arguments = {}
+
         self.config["tokenizer"] = {
             "name": name,
             "arguments": arguments

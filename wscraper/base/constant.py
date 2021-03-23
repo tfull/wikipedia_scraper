@@ -20,3 +20,8 @@ class Constant:
         "word2vec",
         "word_frequency"
     ]
+
+    available_tokenizers = [
+        "mecab",
+        "janome"
+    ]
