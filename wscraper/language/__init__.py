@@ -10,7 +10,3 @@ class Language:
             return English
         else:
             raise WScraperLanguageError(f"Language `{name}` is not implemented.")
-
-
-class WScraperLanguageError(Exception):
-    pass

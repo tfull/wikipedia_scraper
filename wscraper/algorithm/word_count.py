@@ -7,8 +7,16 @@ import tqdm
 class WordCount:
 
     @classmethod
-    def build(cls):
-        pass
+    def build(cls, task_name = None, model_name = None, *, reset = False, config = None):
+        if config is None:
+            config = Config(task_nmae)
+            pass
+
+        algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}", must = True)
+        arguments = config.get_parameter(f"model.{model_name}.{'arguments'}", must = True)
+
+        if algorithm != cls.algorithm_name:
+            raise ValueError()
 
     @classmethod
     def new(cls, language, tokenizer, xml_directory):

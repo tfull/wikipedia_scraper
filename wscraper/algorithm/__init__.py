@@ -37,7 +37,3 @@ class Algorithm:
             WordFrequency.build(task_name = None, model_name = model_name, config = config, reset = reset)
         else:
             raise WScraperAlgorithmError(f"Algorithm {algorithm} is not implemented.\n")
-
-
-class WScraperAlgorithmError(Exception):
-    pass

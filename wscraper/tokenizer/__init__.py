@@ -13,7 +13,3 @@ class Tokenizer:
             return JanomeTokenizer(** arguments)
         else:
             raise WScraperTokenizerError(f"No such tokenizer {name}.")
-
-
-class WScraperTokenizerError(Exception):
-    pass

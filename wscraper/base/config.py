@@ -9,10 +9,6 @@ from .w_scraper_exception import *
 from ..utility import *
 
 
-class WScraperConfigError(WScraperException):
-    pass
-
-
 class Config:
 
     template_root_config = {
@@ -390,6 +386,9 @@ class Config:
     def unset_worker(self):
         self.config["worker"] = None
         self.save()
+
+    def get_worker(self, must = False):
+        return self.get_parameter("worker", must = must)
 
     def set_language(self, language):
         if language not in Constant.available_languages:

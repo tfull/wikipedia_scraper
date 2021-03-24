@@ -11,6 +11,7 @@ from ..language import *
 
 class Word2VecHandler:
 
+    algorithm_name = "word2vec"
     model_file_suffix = ".model"
 
     @classmethod
@@ -18,7 +19,20 @@ class Word2VecHandler:
         if config is None:
             config = Config(task_name)
 
+        algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}", must = True)
         arguments = config.get_parameter(f"model.{model_name}.{'arguments'}", must = True)
+
+        if algorithm != cls.algorithm_name:
+            raise ValueError(f"Algorithm mismatched. Assumed `{algorithm_name}` but got `{algorithm}`.")
+
+        if "min_count" not in arguments:
+            sys.stdout.write("Parameter min_count is not set. Value min_count = 1 is set.\n")
+            arguments["min_count"] = 1
+
+        if "workers" not in arguments:
+            worker = config.get_worker(must = True)
+            sys.stdout.write(f"Parameter workers is not set. wscraper config worker = {worker} is set.\n")
+            arguments["workers"] = worker
 
         tokenizer_property = config.get_tokenizer(must = True)
         tokenizer = Tokenizer.instantiate(tokenizer_property)
@@ -67,11 +81,7 @@ class Word2VecHandler:
 
     @classmethod
     def create_model(cls, pls_directory, ** arguments):
-        if "min_count" not in arguments:
-            arguments["min_count"] = 1
-
-        model = Word2Vec(PathLineSentences(pls_directory), ** arguments)
-        return model
+        return Word2Vec(PathLineSentences(pls_directory), ** arguments)
 
     @classmethod
     def load(cls, path):
