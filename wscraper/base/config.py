@@ -9,6 +9,10 @@ from .w_scraper_exception import *
 from ..utility import *
 
 
+class WScraperConfigError(WScraperException):
+    pass
+
+
 class Config:
 
     template_root_config = {
@@ -43,19 +47,19 @@ class Config:
         if not os.path.isdir(Constant.root_directory):
             message = f"Root directory {Constant.root_directory} does not exist."
             message += " Did you run `wscraper initialize`?"
-            raise WScraperException(message)
+            raise WScraperConfigError(message)
 
         if not os.path.isfile(Constant.root_config):
-            raise WScraperException(f"Root config file {Constant.root_config} does not exist.")
+            raise WScraperConfigError(f"Root config file {Constant.root_config} does not exist.")
 
         if not os.path.isfile(Constant.root_status):
-            raise WScraperException(f"Root status file {Constant.root_status} does not exist.")
+            raise WScraperConfigError(f"Root status file {Constant.root_status} does not exist.")
 
         if not os.path.isdir(Constant.wikipedia_directory):
-            raise WScraperException(f"Wikipedia directory {Constant.wikipedia_directory} does not exist.")
+            raise WScraperConfigError(f"Wikipedia directory {Constant.wikipedia_directory} does not exist.")
 
         if not os.path.isdir(Constant.task_directory):
-            raise WScraperException(f"Task directory {Constant.task_directory} does not exist.")
+            raise WScraperConfigError(f"Task directory {Constant.task_directory} does not exist.")
 
     @classmethod
     def command_root_status(cls):
@@ -72,19 +76,19 @@ class Config:
 
         if wikipedia is not None:
             if not os.path.isdir(os.path.join(Constant.wikipedia_directory, wikipedia)):
-                raise WScraperException(f"No such wikipedia resource {wikipedia}.")
+                raise WScraperConfigError(f"No such wikipedia resource {wikipedia}.")
 
             config["wikipedia"] = wikipedia
 
         if worker is not None:
             if int(worker) not in range(1, 64 + 1):
-                raise WScraperException("Worker should be integer in range from 1 to 64.\n")
+                raise WScraperConfigError("Worker should be integer in range from 1 to 64.\n")
 
             config["worker"] = int(worker)
 
         if language is not None:
             if language not in Constant.available_languages:
-                raise WScraperException(f"language `{language}` is not supported")
+                raise WScraperConfigError(f"language `{language}` is not supported")
 
             config["language"] = language
 
@@ -154,12 +158,12 @@ class Config:
         name_format = r"^[a-zA-Z0-9_\-]+$"
 
         if re.search(name_format, name) is None:
-            raise WScraperException(f"Task name format shoud be composed of alphabet, number, underscore or hyphen.")
+            raise WScraperConfigError(f"Task name format shoud be composed of alphabet, number, underscore or hyphen.")
 
         new_directory = os.path.join(Constant.task_directory, name)
 
         if os.path.exists(new_directory):
-            raise WScraperException(f"Task name {repr(name)} already exists.")
+            raise WScraperConfigError(f"Task name {repr(name)} already exists.")
 
         os.makedirs(new_directory)
         sys.stdout.write(f"New task was created at {new_directory}.\n")
@@ -177,7 +181,7 @@ class Config:
         cls.check_root_directory_exists()
 
         if not os.path.isdir(os.path.join(Constant.task_directory, name)):
-            raise WScraperException(f"Task name {name} does not exist.")
+            raise WScraperConfigError(f"Task name {name} does not exist.")
 
         path = os.path.join(Constant.root_directory, "status.yml")
         status = FileManager.load_yaml(path)
@@ -242,7 +246,7 @@ class Config:
     @classmethod
     def command_tokenizer(cls, name):
         if name not in Constant.available_tokenizers:
-            raise WScraperException(f"No such tokenizer `{name}`.")
+            raise WScraperConfigError(f"No such tokenizer `{name}`.")
 
         config = Config()
         config.set_tokenizer(name)
@@ -280,7 +284,7 @@ class Config:
         path = os.path.join(Constant.task_directory, name, "config.yml")
 
         if not os.path.isfile(path):
-            raise WScraperException(f"Task name {name} does not exist.")
+            raise WScraperConfigError(f"Task name {name} does not exist.")
 
         return FileManager.load_yaml(path)
 
@@ -289,7 +293,7 @@ class Config:
         path = os.path.join(Constant.task_directory, name, "status.yml")
 
         if not os.path.isfile(path):
-            raise WScraperException(f"Task name {name} does not exist.")
+            raise WScraperConfigError(f"Task name {name} does not exist.")
 
         return FileManager.load_yaml(path)
 
@@ -300,7 +304,7 @@ class Config:
             status = FileManager.load_yaml(Constant.root_status)
             name = status["current"]
             if name is None:
-                raise WScraperException("Current name is not set.")
+                raise WScraperConfigError("Current name is not set.")
 
         self.name = name
         self.config = self.load_config_by_name(name)
@@ -337,7 +341,7 @@ class Config:
             data = self.root_config[key]
 
         if data is None and must:
-            raise WScraperException(f"Key {key} must exist but None.")
+            raise WScraperConfigError(f"Key {key} must exist but None.")
 
         return data
 
@@ -345,7 +349,7 @@ class Config:
         wikipedia_list = self.list_wikipedia()
 
         if len(wikipedia_list) == 0:
-            raise WScraperException("There are no wikipedia resources.")
+            raise WScraperConfigError("There are no wikipedia resources.")
 
         if name is None:
             value_map = {}
@@ -367,7 +371,7 @@ class Config:
                     sys.stdout.write("Interrupted and not set.\n")
         else:
             if name not in wikipedia_list:
-                raise WScraperException(f"No such wikipedia resource {name}.")
+                raise WScraperConfigError(f"No such wikipedia resource {name}.")
 
         self.config["wikipedia"] = name
         self.save()
@@ -378,7 +382,7 @@ class Config:
 
     def set_worker(self, number):
         if not (type(number) == int and number in range(1, 64 + 1)):
-            raise WScraperException(f"Argument worker must satisfy 1 <= worker <= 64.")
+            raise WScraperConfigError(f"Argument worker must satisfy 1 <= worker <= 64.")
 
         self.config["worker"] = number
         self.save()
@@ -392,7 +396,7 @@ class Config:
 
     def set_language(self, language):
         if language not in Constant.available_languages:
-            raise WScraperException(f"Language `{language}` is not supported.")
+            raise WScraperConfigError(f"Language `{language}` is not supported.")
 
         self.config["language"] = language
         self.save()
@@ -406,10 +410,10 @@ class Config:
 
     def create_model(self, name, algorithm, arguments = None):
         if name in self.config["model"]:
-            raise WScraperException(f"Model {name} already exists.")
+            raise WScraperConfigError(f"Model {name} already exists.")
 
         if algorithm not in Constant.available_algorithms:
-            raise WScraperException(f"Algorithm {algorithm} is not supported.")
+            raise WScraperConfigError(f"Algorithm {algorithm} is not supported.")
 
         if arguments is None:
             arguments = {}
@@ -423,7 +427,7 @@ class Config:
 
     def delete_model(self, name):
         if name not in self.config["model"]:
-            raise WScraperException(f"Config: Model \"{name}\" does not exist.")
+            raise WScraperConfigError(f"Config: Model \"{name}\" does not exist.")
 
         del self.config["model"][name]
 
@@ -431,7 +435,7 @@ class Config:
 
     def delete_model_arguments(self, name, arguments = None):
         if name not in self.config["model"]:
-            raise WScraperException(f"Model {name} does not exist.")
+            raise WScraperConfigError(f"Model {name} does not exist.")
 
         if arguments is None:
             self.config["model"][name]["arguments"] = {}
@@ -450,7 +454,7 @@ class Config:
 
     def update_model_arguments(self, name, arguments = None):
         if name not in self.config["model"]:
-            raise WScraperException(f"Model {name} does not exist.")
+            raise WScraperConfigError(f"Model {name} does not exist.")
 
         for key in arguments:
             self.config["model"][name]["arguments"][key] = arguments[key]
@@ -497,7 +501,7 @@ class Config:
         wikipedia_xml = os.path.join(Constant.wikipedia_directory, wikipedia_name + ".xml")
 
         if must and not os.path.isfile(wikipedia_xml):
-            raise WScraperException(f"No such file {wikipedia_xml}.")
+            raise WScraperConfigError(f"No such file {wikipedia_xml}.")
 
         return wikipedia_xml
 
@@ -506,7 +510,7 @@ class Config:
         wikipedia_xml_directory = os.path.join(Constant.wikipedia_directory, wikipedia_name)
 
         if must and not os.path.isdir(wikipedia_xml_directory):
-            raise WScraperException(f"No such directory {wikipedia_xml_directory}.")
+            raise WScraperConfigError(f"No such directory {wikipedia_xml_directory}.")
 
         return wikipedia_xml_directory
 

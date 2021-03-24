@@ -7,6 +7,7 @@ from ..utility import *
 from ..base import *
 from ..tokenizer import *
 from ..language import *
+from .w_scraper_algorithm_error import *
 
 
 class Word2VecHandler:
@@ -23,7 +24,7 @@ class Word2VecHandler:
         arguments = config.get_parameter(f"model.{model_name}.{'arguments'}", must = True)
 
         if algorithm != cls.algorithm_name:
-            raise ValueError(f"Algorithm mismatched. Assumed `{algorithm_name}` but got `{algorithm}`.")
+            raise WScraperAlgorithmError(f"Algorithm mismatched. Assumed `{algorithm_name}` but got `{algorithm}`.")
 
         if "min_count" not in arguments:
             sys.stdout.write("Parameter min_count is not set. Value min_count = 1 is set.\n")
@@ -54,11 +55,13 @@ class Word2VecHandler:
             else:
                 sys.stdout.write(f"Path line sentences exist at {pls_directory}. Removing.\n")
                 for path in existing_files:
-                    os.path.remove(path)
+                    os.remove(path)
                 sys.stdout.write("Removed.\n")
 
         if pls_flag:
+            sys.stdout.write("Creating path line sentences...\n")
             cls.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer)
+            sys.stdout.write("Done!\n")
 
         sys.stdout.write("Creating Word2Vec model.\n")
         model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)

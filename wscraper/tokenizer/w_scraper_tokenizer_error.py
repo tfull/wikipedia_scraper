@@ -1,0 +1,2 @@
+class WScraperTokenizerError(WScraperException):
+    pass

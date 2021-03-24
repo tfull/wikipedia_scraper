@@ -1,4 +1,5 @@
 from ..base import *
+from .w_scraper_algorithm_error import *
 
 
 class Algorithm:
@@ -9,17 +10,21 @@ class Algorithm:
 
         config = Config(task_name)
 
-        if model_name_list is None:
-            model_name_list = config.get_model(must = True).keys()
+        config_model_names = config.get_model(must = True).keys()
 
-        no_such_model_name_list = []
+        if model_name_list is None or len(model_name_list) == 0:
+            model_name_list = config_model_names
+        else:
+            no_such_model_name_list = []
 
-        for model_name in model_name_list:
-            if model_name not in config.get_parameter("model").keys():
-                no_such_model_name_list.append(model)
+            for model_name in model_name_list:
+                if model_name not in config.get_model.keys():
+                    no_such_model_name_list.append(model)
 
-        if len(no_such_model_name_list) > 0:
-            raise WScraperConfigError(f"No such model name {', '.join(no_such_model_name_list)}.")
+            if len(no_such_model_name_list) > 0:
+                raise WScraperConfigError(f"No such model name {', '.join(no_such_model_name_list)}.")
+
+        sys.stdout.write(f"Building model {', '.join(model_name_list)}...\n")
 
         for model_name in model_name_list:
             model_item = config.get_parameter(f"model.{model_name}.")
