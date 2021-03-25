@@ -26,6 +26,13 @@ class Word2VecHandler:
         if algorithm != cls.algorithm_name:
             raise WScraperAlgorithmError(f"Algorithm mismatched. Assumed `{algorithm_name}` but got `{algorithm}`.")
 
+        model_directory = config.make_model_directory()
+        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
+
+        if not reset and os.path.isfile(model_path):
+            sys.stdout.write(f"Model {model_name} already exists. Skipping.\n")
+            return
+
         if "min_count" not in arguments:
             sys.stdout.write("Parameter min_count is not set. Value min_count = 1 is set.\n")
             arguments["min_count"] = 1
@@ -42,7 +49,6 @@ class Word2VecHandler:
 
         xml_directory = config.get_wikipedia_xml_directory()
         pls_directory = config.make_workspace("pls")
-        model_directory = config.make_model_directory()
 
         pls_flag = True
 
@@ -64,7 +70,6 @@ class Word2VecHandler:
             sys.stdout.write("Done!\n")
 
         sys.stdout.write("Creating Word2Vec model.\n")
-        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
         model = cls.create_model(pls_directory)
         model.save(model_path)
         sys.stdout.write(f"Word2Vec model was saved to {model_path}.\n")

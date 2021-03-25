@@ -23,6 +23,13 @@ class WordFrequency:
         if algorithm != cls.algorithm_name:
             raise ValueError(f"Algorithm mismatched. Assumed `{algorithm_name}` but got `{algorithm}`.")
 
+        model_directory = config.make_model_directory()
+        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
+
+        if not reset and os.path.isfile(model_path):
+            sys.stdout.write(f"Model {model_name} already exists. Skipping.\n")
+            return
+
         xml_directory = config.get_wikipedia_xml_directory()
 
         tokenizer_property = config.get_tokenizer(must = True)
@@ -30,15 +37,12 @@ class WordFrequency:
 
         language = Language.get_class(config.get_language(must = True))
 
-        model_directory = config.make_model_directory()
-
         sys.stdout.write("Building word_frequency model...\n")
         instance = cls.create_count_map(language = language, tokenizer = tokenizer, xml_directory = xml_directory)
         sys.stdout.write("Done.\n")
 
-        output_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
-        instance.save(output_path)
-        sys.stdout.write(f"Saved to {output_path}.\n")
+        instance.save(model_path)
+        sys.stdout.write(f"Saved to {model_path}.\n")
 
     @classmethod
     def create_count_map(cls, language, tokenizer, xml_directory):
