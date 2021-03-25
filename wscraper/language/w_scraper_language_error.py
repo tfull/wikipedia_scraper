@@ -1,0 +1,2 @@
+class WScraperLanguageError(WScraperException):
+    pass
