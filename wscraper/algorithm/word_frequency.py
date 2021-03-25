@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 from ..analysis import *
 from ..language import *
 from ..tokenizer import *

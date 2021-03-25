@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 import glob
 import os
 from gensim.models.word2vec import Word2Vec, PathLineSentences
