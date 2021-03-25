@@ -73,7 +73,7 @@ class Config:
         print(FileManager.to_yaml_string(config))
 
     @classmethod
-    def command_root_set(cls, wikipedia, worker):
+    def command_root_set(cls, wikipedia, worker, language):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -99,7 +99,7 @@ class Config:
         FileManager.save_yaml(Constant.root_config, config)
 
     @classmethod
-    def command_root_unset(cls, wikipedia, worker):
+    def command_root_unset(cls, wikipedia, worker, language):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -482,12 +482,20 @@ class Config:
             if model_name not in item:
                 no_existing_list.append()
 
-    def set_tokenizer(self, name, arguments = None):
+    def set_tokenizer(self, method = None, arguments = None):
+        if method is None:
+            method = self.get_parameter("tokenizer.method", must = False)
+            if method is None:
+                raise WScraperConfigError(f"Tokenizer method is not set.")
+        else:
+            if method not in Constant.available_tokenizers:
+                raise WScraperConfigError(f"Tokenizer `{method}` is not supported.")
+
         if arguments is None:
             arguments = {}
 
         self.config["tokenizer"] = {
-            "name": name,
+            "method": method,
             "arguments": arguments
         }
 

@@ -32,7 +32,7 @@ Command:
     wscraper model new [model_name] [algorithm_name]
     wscraper model delete [model_name]
     wscraper model build [model_name list]
-    wscraper tokenizer [tokenizer_name]
+    wscraper tokenizer [tokenizer_method]
     wscraper root status
     wscraper root set
     wscraper root unset
@@ -302,11 +302,11 @@ def command_tokenizer(args):
         description = "Command `wscraper tokenizer` set tokenizer."
     )
 
-    parser.add_argument("name", help = "tokenizer name")
+    parser.add_argument("method", help = "tokenizer method")
 
     args = parser.parse_args(args)
 
-    Config.command_tokenizer(args.name)
+    Config.command_tokenizer(args.method)
 
 
 def command_wikipedia(args):

@@ -6,14 +6,14 @@ class Tokenizer:
 
     @classmethod
     def instantiate(cls, tokenizer_property):
-        name = tokenizer_property["name"]
+        method = tokenizer_property["method"]
         arguments = tokenizer_property["arguments"]
 
-        if name == "mecab":
+        if method == "mecab":
             from .mecab_tokenizer import MecabTokenizer
             return MecabTokenizer(** arguments)
-        elif name == "janome":
+        elif method == "janome":
             from .janome_tokenizer import JanomeTokenizer
             return JanomeTokenizer(** arguments)
         else:
-            raise WScraperTokenizerError(f"No such tokenizer {name}.")
+            raise WScraperTokenizerError(f"No such tokenizer {method}.")
