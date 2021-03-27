@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 import os
 
 
@@ -23,5 +27,6 @@ class Constant:
 
     available_tokenizers = [
         "mecab",
-        "janome"
+        "janome",
+        "nltk"
     ]

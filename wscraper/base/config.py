@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 import re
 import os
 import sys
@@ -34,14 +38,6 @@ class Config:
         "current": None
     }
 
-    parameter_list = [
-        "wikipedia",
-        "worker",
-        "language",
-        "tokenizer",
-        "model"
-    ]
-
     @classmethod
     def check_root_directory_exists(cls):
         if not os.path.isdir(Constant.root_directory):
@@ -66,10 +62,12 @@ class Config:
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
-        print(FileManager.to_yaml_string(config))
+        print("wikipedia:", config["wikipedia"] or "[not set]")
+        print("worker:", config["worker"] or "[not set]")
+        print("language:", config["language"] or "[not set]")
 
     @classmethod
-    def command_root_set(cls, wikipedia, worker):
+    def command_root_set(cls, wikipedia, worker, language):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -92,10 +90,10 @@ class Config:
 
             config["language"] = language
 
-        FileManager.save_yaml(Constant.root_config, config)
+        FileManager.save_json(Constant.root_config, config)
 
     @classmethod
-    def command_root_unset(cls, wikipedia, worker):
+    def command_root_unset(cls, wikipedia, worker, language):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -109,7 +107,7 @@ class Config:
         if language:
             config["language"] = None
 
-        FileManager.save_yaml(Constant.root_config, config)
+        FileManager.save_json(Constant.root_config, config)
 
     @classmethod
     def command_initialize(cls):
@@ -119,13 +117,13 @@ class Config:
             if os.path.isfile(Constant.root_config):
                 sys.stdout.write(f"Root config {Constant.root_config} already exists.\n")
             else:
-                FileManager.save_yaml(Constant.root_config, cls.template_root_config)
+                FileManager.save_json(Constant.root_config, cls.template_root_config)
                 sys.stdout.write(f"Root config {Constant.root_config} was created.\n")
 
             if os.path.isfile(Constant.root_status):
                 sys.stdout.write(f"Root status {Constant.root_status} already exists.\n")
             else:
-                FileManager.save_yaml(Constant.root_status, { "current": None })
+                FileManager.save_json(Constant.root_status, cls.template_root_status)
                 sys.stdout.write(f"Root status {Constant.root_status} was created.\n")
 
             if os.path.isdir(Constant.wikipedia_directory):
@@ -142,9 +140,9 @@ class Config:
         else:
             os.makedirs(Constant.root_directory)
             sys.stdout.write(f"Root directory {Constant.root_directory} was created.\n")
-            FileManager.save_yaml(Constant.root_config, cls.template_root_config)
+            FileManager.save_json(Constant.root_config, cls.template_root_config)
             sys.stdout.write(f"Root config {Constant.root_config} was creaetd.\n")
-            FileManager.save_yaml(Constant.root_status, { "current": None })
+            FileManager.save_json(Constant.root_status, cls.template_root_status)
             sys.stdout.write(f"Root status {Constant.root_status} was created.\n")
             os.makedirs(Constant.wikipedia_directory)
             sys.stdout.write(f"Wikipedia directory {Constant.wikipedia_directory} was created.\n")
@@ -171,9 +169,9 @@ class Config:
         path_config = os.path.join(new_directory, "config.yml")
         path_status = os.path.join(new_directory, "status.yml")
 
-        FileManager.save_yaml(path_config, cls.template_config)
+        FileManager.save_json(path_config, cls.template_config)
         sys.stdout.write(f"Config file was created at {path_config}.\n")
-        FileManager.save_yaml(path_status, {})
+        FileManager.save_json(path_status, {})
         sys.stdout.write(f"Status file was created at {path_status}.\n")
 
     @classmethod
@@ -184,9 +182,9 @@ class Config:
             raise WScraperConfigError(f"Task name {name} does not exist.")
 
         path = os.path.join(Constant.root_directory, "status.yml")
-        status = FileManager.load_yaml(path)
+        status = FileManager.load_json(path)
         status["current"] = name
-        FileManager.save_yaml(path, status)
+        FileManager.save_json(path, status)
         sys.stdout.write(f"Task switched to {name}.\n")
 
     @classmethod
@@ -273,11 +271,11 @@ class Config:
 
     @classmethod
     def load_root_config(cls):
-        return FileManager.load_yaml(Constant.root_config)
+        return FileManager.load_json(Constant.root_config)
 
     @classmethod
     def load_root_status(cls):
-        return FileManager.load_yaml(Constant.root_status)
+        return FileManager.load_json(Constant.root_status)
 
     @classmethod
     def load_config_by_name(cls, name):
@@ -286,7 +284,7 @@ class Config:
         if not os.path.isfile(path):
             raise WScraperConfigError(f"Task name {name} does not exist.")
 
-        return FileManager.load_yaml(path)
+        return FileManager.load_json(path)
 
     @classmethod
     def load_status_by_name(cls, name):
@@ -295,13 +293,13 @@ class Config:
         if not os.path.isfile(path):
             raise WScraperConfigError(f"Task name {name} does not exist.")
 
-        return FileManager.load_yaml(path)
+        return FileManager.load_json(path)
 
     def __init__(self, name = None):
         self.check_root_directory_exists()
 
         if name is None:
-            status = FileManager.load_yaml(Constant.root_status)
+            status = FileManager.load_json(Constant.root_status)
             name = status["current"]
             if name is None:
                 raise WScraperConfigError("Current name is not set.")
@@ -315,20 +313,57 @@ class Config:
 
     def save(self):
         path = os.path.join(self.this_directory, "config.yml")
-        FileManager.save_yaml(path, self.config)
+        FileManager.save_json(path, self.config)
 
     def print_status(self):
-        # TODO strict yaml
-
         print("current task:", self.name)
 
-        for key in self.parameter_list:
-            data = self.config[key]
+        print("")
 
-            if data is None and key in self.template_root_config:
-                print(key + ":", self.root_config[key], "[default]")
-            else:
-                print(key + ":", data)
+        wikipedia = self.config["wikipedia"]
+
+        if wikipedia is None:
+            print("wikipedia [default]:", self.root_config["wikipedia"] or "[not set]")
+        else:
+            print("wikipedia:", wikipedia)
+
+        worker = self.config["worker"]
+
+        if worker is None:
+            print("worker [default]:", self.root_config["worker"] or "[not set]")
+        else:
+            print("worker:", worker)
+
+        language = self.config["language"]
+
+        if language is None:
+            print("language [defalt]:", self.root_config["language"] or "[not set]")
+        else:
+            print("language:", language)
+
+        tokenizer = self.config["tokenizer"]
+
+        if len(tokenizer) == 0:
+            print("tokenizer: [not set]")
+        else:
+            print("tokenizer:")
+            print("  method:", tokenizer["method"])
+            print("  arguments:")
+            for key, value in sorted(tokenizer["arguments"].items()):
+                print(f"    {key}: {value}")
+
+        model = self.config["model"]
+
+        if len(model) == 0:
+            print("model: [no model]")
+        else:
+            print("model:")
+            for key in sorted(model.keys()):
+                print(f"  {key}:")
+                print(f"    algorithm: {model[key]['algorithm']}")
+                print("    arguments:")
+                for k, v in model[key]["arguments"].items():
+                    print(f"      {k}: {v}")
 
     def get_parameter(self, key, *, must = False):
         data = self.config
@@ -478,12 +513,20 @@ class Config:
             if model_name not in item:
                 no_existing_list.append()
 
-    def set_tokenizer(self, name, arguments = None):
+    def set_tokenizer(self, method = None, arguments = None):
+        if method is None:
+            method = self.get_parameter("tokenizer.method", must = False)
+            if method is None:
+                raise WScraperConfigError(f"Tokenizer method is not set.")
+        else:
+            if method not in Constant.available_tokenizers:
+                raise WScraperConfigError(f"Tokenizer `{method}` is not supported.")
+
         if arguments is None:
             arguments = {}
 
         self.config["tokenizer"] = {
-            "name": name,
+            "method": method,
             "arguments": arguments
         }
 

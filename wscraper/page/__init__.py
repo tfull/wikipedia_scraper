@@ -2,5 +2,5 @@
 # This software is released under the MIT License, see LICENSE.
 
 
-class WScraperException(Exception):
-    pass
+from .entry import *
+from .redirection import *

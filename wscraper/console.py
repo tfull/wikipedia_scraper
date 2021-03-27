@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 import sys
 import argparse
 
@@ -21,6 +25,8 @@ Command:
         describe status of current task
     wscraper switch [task_name]
         change task to [task_name]
+    wscraper import [xml path] [options]
+        read [xml path] and locate wikipedia resource directory
     wscraper set [options]
         set parameters
     wscraper unset [options]
@@ -28,7 +34,7 @@ Command:
     wscraper model new [model_name] [algorithm_name]
     wscraper model delete [model_name]
     wscraper model build [model_name list]
-    wscraper tokenizer [tokenizer_name]
+    wscraper tokenizer [tokenizer_method]
     wscraper root status
     wscraper root set
     wscraper root unset
@@ -54,6 +60,8 @@ def command():
         command_status(args)
     elif name == "switch":
         command_switch(args)
+    elif name == "import":
+        command_import(args)
     elif name == "set":
         command_set(args)
     elif name == "unset":
@@ -216,11 +224,11 @@ def command_root(args):
         command_root_status(args[1:])
     elif name == "set":
         command_root_set(args[1:])
-    elif name == "delete":
+    elif name == "unset":
         command_root_delete(args[1:])
     else:
         sys.stderr.write(f"No such command {name}.\n")
-        sys.stderr.write("Command `wscraper root` takes `status`, `set` or `delete` for first argument.\n")
+        sys.stderr.write("Command `wscraper root` takes `status`, `set` or `unset` for first argument.\n")
         sys.exit(1)
 
 
@@ -249,7 +257,7 @@ def command_root_set(args):
 
 def command_root_unset(args):
     parser = argparse.ArgumentParser(
-        prog = "wscraper root delete",
+        prog = "wscraper root unset",
         description = "Command `wscraper root delete` deletes default config value."
     )
 
@@ -298,11 +306,11 @@ def command_tokenizer(args):
         description = "Command `wscraper tokenizer` set tokenizer."
     )
 
-    parser.add_argument("name", help = "tokenizer name")
+    parser.add_argument("method", help = "tokenizer method")
 
     args = parser.parse_args(args)
 
-    Config.command_tokenizer(args.name)
+    Config.command_tokenizer(args.method)
 
 
 def command_wikipedia(args):

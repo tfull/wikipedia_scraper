@@ -1,3 +1,7 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
+
 from ..analysis import *
 from ..language import *
 from ..tokenizer import *
@@ -50,7 +54,7 @@ class WordFrequency:
         frequency = {}
 
         for page in tqdm.tqdm(PageIterator(xml_directory)):
-            entry = Parser.to_model(page, language = language, entry_only = True)
+            entry = Parser.page_to_class(page, language = language, entry_only = True)
 
             if entry is None:
                 continue

@@ -1,5 +1,5 @@
-from ..utility import *
-from ..base import *
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
 
 import re
 import sys
@@ -7,6 +7,9 @@ import glob
 import os
 import tqdm
 from collections import OrderedDict
+
+from ..utility import *
+from ..base import *
 
 
 class Builder:
