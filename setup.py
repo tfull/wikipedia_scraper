@@ -20,6 +20,7 @@ setup(
     packages = find_packages(),
     keywords = ["Wikipedia"],
     description = "Scraping documents from a dump XML file of Wikipedia.",
+    description_content_type = "text/plain",
     long_description = get_readme(),
     long_description_content_type = "text/markdown",
     entry_points = {
