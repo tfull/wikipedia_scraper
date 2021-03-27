@@ -1,3 +1,6 @@
+# Copyright (c) 2021 T.Furukawa
+# This software is released under the MIT License, see LICENSE.
+
 from setuptools import setup, find_packages
 
 
@@ -7,10 +10,9 @@ def get_readme():
 
 
 setup(
-    name = "wscraper",
+    name = "wikipedia-scraper",
     version = "0.0.1",
     license = "MIT License",
-    description = "Wikipedia Scraper",
     author = "T.Furukawa",
     author_email = "tfurukawa.mail@gmail.com",
     url = "https://github.com/tfull/wikipedia_scraper",
