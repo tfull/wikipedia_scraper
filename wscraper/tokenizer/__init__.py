@@ -15,5 +15,8 @@ class Tokenizer:
         elif method == "janome":
             from .janome_tokenizer import JanomeTokenizer
             return JanomeTokenizer(** arguments)
+        elif method == "nltk":
+            from .nltk_tokenizer import NltkTokenizer
+            return NltkTokenizer(** arguments)
         else:
             raise WScraperTokenizerError(f"No such tokenizer {method}.")

@@ -82,7 +82,7 @@ class Word2VecHandler:
     def create_path_line_sentences(cls, xml_directory, pls_directory, language, tokenizer):
         with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer:
             for page in PageIterator(xml_directory):
-                entry = Parser.to_model(page, language = language, entry_only = True)
+                entry = Parser.page_to_class(page, language = language, entry_only = True)
 
                 if entry is None:
                     continue

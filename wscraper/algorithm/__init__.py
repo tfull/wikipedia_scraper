@@ -22,7 +22,7 @@ class Algorithm:
             no_such_model_name_list = []
 
             for model_name in model_name_list:
-                if model_name not in config.get_model.keys():
+                if model_name not in config_model_names:
                     no_such_model_name_list.append(model)
 
             if len(no_such_model_name_list) > 0:

@@ -11,19 +11,24 @@ pip install wscraper
 
 ## Support
 
-### tokenizer
+### language
 
 - japanese
   - Japanese Wikipedia
 - english
   - English Wikipedia
 
-### language
+### tokenizer
 
 - mecab
   - `pip install mecab-python`
+  - Japanese tokenizer
 - janome
   - `pip install janome`
+  - Japanese tokenizer
+- nltk
+  - `pip install nltk`
+  - English tokenizer
 
 ### model
 
@@ -70,6 +75,8 @@ Current task is switched to `my_task`.
 ### 4. Importing A Wikipedia XML File
 
 This operation is independent of each task 2, 3.
+
+A file wikipedia.xml assumes like `(lang)wiki-(date)-pages-articles-multistream.xml`
 
 ```shell
 wscraper import /path/to/wikipedia.xml --name my_wp

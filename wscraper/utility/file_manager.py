@@ -1,8 +1,7 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-
-import yaml
+import json
 import xml.etree.ElementTree
 
 
@@ -19,15 +18,12 @@ class FileManager:
             return parser.close()
 
     @classmethod
-    def load_yaml(cls, path):
+    def load_json(cls, path):
         with open(path, "r") as f:
-            return yaml.safe_load(f)
+            return json.load(f)
 
     @classmethod
-    def save_yaml(cls, path, data):
+    def save_json(cls, path, data):
         with open(path, "w") as f:
-            f.write(yaml.dump(data) + "\n")
-
-    @classmethod
-    def to_yaml_string(cls, value):
-        return yaml.dump(value)
+            json.dump(data, f, indent = 2)
+            f.write("\n")

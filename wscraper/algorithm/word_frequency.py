@@ -54,7 +54,7 @@ class WordFrequency:
         frequency = {}
 
         for page in tqdm.tqdm(PageIterator(xml_directory)):
-            entry = Parser.to_model(page, language = language, entry_only = True)
+            entry = Parser.page_to_class(page, language = language, entry_only = True)
 
             if entry is None:
                 continue

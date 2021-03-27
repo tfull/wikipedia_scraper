@@ -1,11 +1,10 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-
-from ..model import *
-from ..utility import *
-
 import re
+
+from ..page import *
+from ..utility import *
 
 
 RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
@@ -25,7 +24,7 @@ RE_LIST       = re.compile(r"\* ")
 class Parser:
 
     @classmethod
-    def to_model(cls, page, *, language = None, entry_only = False):
+    def page_to_class(cls, page, *, language = None, entry_only = False):
         if language is None:
             raise ValueError("language: None")
 

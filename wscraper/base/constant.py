@@ -27,5 +27,6 @@ class Constant:
 
     available_tokenizers = [
         "mecab",
-        "janome"
+        "janome",
+        "nltk"
     ]
