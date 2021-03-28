@@ -5,7 +5,6 @@ Parsing, tokenizing and creating language model using a Wikipedia dump XML file.
 ## Installation
 
 ```shell
-# Future enabled.
 pip install wscraper
 ```
 
