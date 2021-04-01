@@ -1,2 +1,4 @@
 __pycache__/
 /workspace/
+/dist/
+/wscraper.egg-info/

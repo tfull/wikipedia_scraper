@@ -65,9 +65,10 @@ class Config:
         print("wikipedia:", config["wikipedia"] or "[not set]")
         print("worker:", config["worker"] or "[not set]")
         print("language:", config["language"] or "[not set]")
+        print("page_chunk:", config["page_chunk"])
 
     @classmethod
-    def command_root_set(cls, wikipedia, worker, language):
+    def command_root_set(cls, wikipedia, worker, language, page_chunk):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -79,16 +80,22 @@ class Config:
             config["wikipedia"] = wikipedia
 
         if worker is not None:
-            if int(worker) not in range(1, 64 + 1):
-                raise WScraperConfigError("Worker should be integer in range from 1 to 64.\n")
+            if not (worker >= Constant.min_worker and worker <= Constant.max_worker):
+                raise WScraperConfigError(f"Worker should be integer in range from {Constant.min_worker} to {Constant.max_worker}.")
 
-            config["worker"] = int(worker)
+            config["worker"] = worker
 
         if language is not None:
             if language not in Constant.available_languages:
-                raise WScraperConfigError(f"language `{language}` is not supported")
+                raise WScraperConfigError(f"language `{language}` is not supported.")
 
             config["language"] = language
+
+        if page_chunk is not None:
+            if not (page_chunk >= Constant.min_page_chunk and page_chunk <= Constant.max_page_chunk):
+                raise WScraperConfigError(f"page_chunk should satisfy {Constant.min_page_chunk} <= page_chunk <= {Constant.max_page_chunk}.")
+
+            config["page_chunk"] = page_chunk
 
         FileManager.save_json(Constant.root_config, config)
 
@@ -186,6 +193,21 @@ class Config:
         status["current"] = name
         FileManager.save_json(path, status)
         sys.stdout.write(f"Task switched to {name}.\n")
+
+    @classmethod
+    def command_task(cls):
+        cls.check_root_directory_exists()
+
+        list_directory = [d for d in glob.glob(os.path.join(Constant.task_directory, "*")) if os.path.isdir(d)]
+
+        if len(list_directory) == 0:
+            sys.stdout.write("There are no tasks.\n")
+            return
+
+        sys.stdout.write("Tasks:\n")
+        for directory in list_directory:
+            name = os.path.basename(directory)
+            sys.stdout.write(f"- {name}\n")
 
     @classmethod
     def command_set(cls, wikipedia, worker, language):

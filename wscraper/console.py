@@ -16,9 +16,9 @@ Wikipedia Scraper
 
 Command:
     wscraper initialize
-        make directory ~/.wscraper and config file
+        make root directory of wscraper and config file
     wscraper init
-        same as initialize
+        same as `wscraper initialize`
     wscraper new [task_name]
         create pattern named [task_name]
     wscraper status
@@ -50,32 +50,28 @@ def command():
     name = sys.argv[1]
     args = sys.argv[2:]
 
+    map_command_function = {
+        "new": command_new,
+        "status": command_status,
+        "switch": command_switch,
+        "import": command_import,
+        "set": command_set,
+        "unset": command_unset,
+        "model": command_model,
+        "tokenizer": command_tokenizer,
+        "root": command_root,
+        "wikipedia": command_wikipedia,
+        "task": command_task
+    }
+
     if name in ["help", "--help"]:
         sys.stdout.write(help_string.lstrip())
     elif name in ["initialize", "init"]:
         command_initialize(args)
-    elif name == "new":
-        command_new(args)
-    elif name == "status":
-        command_status(args)
-    elif name == "switch":
-        command_switch(args)
-    elif name == "import":
-        command_import(args)
-    elif name == "set":
-        command_set(args)
-    elif name == "unset":
-        command_unset(args)
-    elif name == "model":
-        command_model(args)
-    elif name == "tokenizer":
-        command_tokenizer(args)
-    elif name == "root":
-        command_root(args)
-    elif name == "wikipedia":
-        command_wikipedia(args)
+    elif name in map_command_function:
+        map_command_function[name](args)
     else:
-        sys.stderr.write(f"No such command {name}.\n{help_string}")
+        sys.stderr.write(f"No such command `{name}`.\n{help_string}")
         sys.exit(1)
 
 
@@ -247,12 +243,13 @@ def command_root_set(args):
     )
 
     parser.add_argument("--wikipedia", help = "Wikipedia name")
-    parser.add_argument("--worker", help = "the number of threads for working")
+    parser.add_argument("--worker", type=int, help = "the number of threads for working")
     parser.add_argument("--language", help = "Wikipedia language")
+    parser.add_argument("--page_chunk", type=int, help = "page per xml file")
 
     args = parser.parse_args(args)
 
-    Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+    Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language, page_chunk = args.page_chunk)
 
 
 def command_root_unset(args):
@@ -319,3 +316,11 @@ def command_wikipedia(args):
         sys.exit(1)
 
     Config.command_wikipedia()
+
+
+def command_task(args):
+    if len(args) != 0:
+        sys.stderr.write("Command `wscraper task` requires no arguments.\n")
+        sys.exit(1)
+
+    Config.command_task()

@@ -38,11 +38,14 @@ class Algorithm:
     def build_sub(cls, config, model_name, reset):
         algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}")
 
-        if algorithm == "word2vec":
-            from .word_2_vec_handler import Word2VecHandler
-            Word2VecHandler.build(task_name = None, model_name = model_name, config = config, reset = reset)
-        elif algorithm == "word_frequency":
+        if algorithm == "word_frequency":
             from .word_frequency import WordFrequency
             WordFrequency.build(task_name = None, model_name = model_name, config = config, reset = reset)
+        elif algorithm == "word2vec":
+            from .word_2_vec_handler import Word2VecHandler
+            Word2VecHandler.build(task_name = None, model_name = model_name, config = config, reset = reset)
+        elif algorithm == "doc2vec":
+            from .doc_2_vec_handler import Doc2VecHandler
+            Doc2VecHandler.build(task_name = None, model_name = model_name, config = config, reset = reset)
         else:
             raise WScraperAlgorithmError(f"Algorithm {algorithm} is not implemented.\n")

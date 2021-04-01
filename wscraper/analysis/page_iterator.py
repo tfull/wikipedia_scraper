@@ -11,6 +11,7 @@ class PageIterator:
 
     def __init__(self, xml_directory):
         self.path_list = sorted(glob.glob(xml_directory + "/*.xml"))
+        self.n_path = len(self.path_list)
         self.i_path = 0
         self.page_list = []
         self.i_page = 0
@@ -25,5 +26,6 @@ class PageIterator:
 
             path = self.path_list.pop(0)
             self.page_list = FileManager.load_xml(path).findall("page")
+            self.i_path += 1
 
         return self.page_list.pop(0)

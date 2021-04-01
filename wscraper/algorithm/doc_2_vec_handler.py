@@ -4,7 +4,8 @@
 
 import glob
 import os
-from gensim.models.word2vec import Word2Vec, PathLineSentences
+import tqdm
+from gensim.models.doc2vec import Doc2Vec
 
 from ..analysis import *
 from ..utility import *
@@ -14,10 +15,12 @@ from ..language import *
 from .w_scraper_algorithm_error import *
 
 
-class Word2VecHandler:
+class Doc2VecHandler:
 
-    algorithm_name = "word2vec"
+    algorithm_name = "doc2vec"
     model_file_suffix = ".model"
+    corpus_workspace = "doc2vec_corpus"
+    corpus_file = "corpus.txt"
 
     @classmethod
     def build(cls, task_name = None, model_name = None, *, reset = False, config = None):
@@ -52,39 +55,38 @@ class Word2VecHandler:
         language = Language.get_class(config.get_language(must = True))
 
         xml_directory = config.get_wikipedia_xml_directory()
-        pls_directory = config.make_workspace("pls")
+        corpus_directory = config.make_workspace(cls.corpus_workspace)
 
-        pls_flag = True
+        corpus_writing_flag = True
 
-        existing_files = glob.glob(os.path.join(pls_directory, "*.txt"))
+        corpus_file_path = os.path.join(corpus_directory, cls.corpus_file)
 
-        if len(existing_files) > 0:
+        if os.path.isfile(corpus_file_path):
             if not reset:
-                sys.stdout.write(f"Path line sentences already exist at {pls_directory}. Skipping.\n")
-                pls_flag = False
+                sys.stdout.write(f"A corpus file already exists at {corpus_file_path}. Skipping.\n")
+                corpus_writing_flag = False
             else:
-                sys.stdout.write(f"Path line sentences exist at {pls_directory}. Removing.\n")
-                for path in existing_files:
-                    os.remove(path)
+                sys.stdout.write(f"A corpus file exists at {corpus_file_path}.\n")
+                os.remove(corpus_file_path)
                 sys.stdout.write("Removed.\n")
 
-        if pls_flag:
-            sys.stdout.write("Creating path line sentences...\n")
-            cls.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer)
+        if corpus_writing_flag:
+            sys.stdout.write("Creating a corpus file for doc2vec...\n")
+            cls.create_corpus_text(xml_directory, corpus_file_path, language, tokenizer)
             sys.stdout.write("Done!\n")
 
-        sys.stdout.write("Creating Word2Vec model.\n")
-        model = cls.create_model(pls_directory, ** arguments)
+        sys.stdout.write("Creating a doc2vec model.\n")
+        model = cls.create_model(corpus_file_path, ** arguments)
         model.save(model_path)
-        sys.stdout.write(f"Word2Vec model was saved to {model_path}.\n")
+        sys.stdout.write(f"A doc2vec model was saved to {model_path}.\n")
 
     @classmethod
-    def create_path_line_sentences(cls, xml_directory, pls_directory, language, tokenizer):
+    def create_corpus_text(cls, xml_directory, corpus_file_path, language, tokenizer):
         page_iterator = PageIterator(xml_directory)
 
-        with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer, tqdm.tqdm(page_iterator) as pager:
+        with open(corpus_file_path, "w") as writer, tqdm.tqdm(page_iterator) as pager:
             for page in pager:
-                pager.set_postfix(OrderedDict(reader = f"{page_iterator.i_path}/{page_iterator.n_path}", writer = f"{writer.file_count}"))
+                pager.set_postfix(OrderedDict(file = f"{page_iterator.i_path}/{page_iterator.n_path}"))
                 entry = Parser.page_to_class(page, language = language, entry_only = True)
 
                 if entry is None:
@@ -92,30 +94,15 @@ class Word2VecHandler:
 
                 lines = [" ".join(tokenizer.split(sentence)) for sentence in Parser.to_sentences(entry.mediawiki, language = language)]
 
-                writer.write("\n".join(lines), len(lines))
+                writer.write("\n".join(lines))
 
     @classmethod
-    def create_model(cls, pls_directory, ** arguments):
-        return Word2Vec(PathLineSentences(pls_directory), ** arguments)
-
-    @classmethod
-    def load_from_config(cls, task_name = None, model_name = None, *, config = None):
-        if config is None:
-            config = Config(task_name)
-
-        algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}", must = True)
-
-        if algorithm != cls.algorithm_name:
-            raise WScraperAlgorithmError(f"Algorithm mismatched. Assumed `{cls.algorithm_name}` but got `{algorithm}`.")
-
-        model_directory = config.make_model_directory()
-        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
-
-        return cls.load(model_path)
+    def create_model(cls, corpus_file_path, ** arguments):
+        return Doc2Vec(corpus_file = corpus_file_path, ** arguments)
 
     @classmethod
     def load(cls, path):
-        return cls(Word2Vec.load(path))
+        return cls(Doc2Vec.load(path))
 
     def __init__(self, model):
         self.model = model
