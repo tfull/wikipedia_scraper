@@ -12,7 +12,7 @@ def get_readme():
 
 setup(
     name = "wscraper",
-    version = "0.0.1",
+    version = "0.0.2",
     license = "MIT License",
     author = "T.Furukawa",
     author_email = "tfurukawa.mail@gmail.com",

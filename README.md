@@ -2,6 +2,11 @@
 
 Parsing, tokenizing and creating language model using a Wikipedia dump XML file.
 
+## Author
+
+- Name: T.Furukawa
+- Email: tfurukawa.mail@gmail.com
+
 ## Installation
 
 ```shell
@@ -20,21 +25,23 @@ pip install wscraper
 ### tokenizer
 
 - mecab
-  - `pip install mecab-python`
+  - Modules `pip install mecab-python unidic-lite` are required.
+  - Some apt packages `libmecab-dev libmecab2 swig` are required for Ubuntu.
   - Japanese tokenizer
 - janome
-  - `pip install janome`
+  - A module `pip install janome` is required.
   - Japanese tokenizer
 - nltk
-  - `pip install nltk`
+  - A module `pip install nltk` is required.
   - English tokenizer
 
 ### model
 
 - word2vec
-  - `pip install gensim`
+  - A module `pip install gensim` is required.
+- doc2vec
+  - A module `pip install gemsim` is required.
 - word_frequency
-  - `pip install pandas`
   - word frequency and word document frequency
 
 ## How to Work

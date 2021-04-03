@@ -1,20 +1,22 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
+import tqdm
+import pickle
 
 from ..analysis import *
 from ..language import *
 from ..tokenizer import *
+from .tool.logger import *
 from .w_scraper_algorithm_error import *
 
-import pandas as pd
-import tqdm
 
-
-class WordFrequency:
+class WordFrequency(Logger):
 
     algorithm_name = "word_frequency"
-    model_file_suffix = ".csv"
+    model_file_suffix = ".model"
+
+    logger_name = "word_frequency"
 
     @classmethod
     def build(cls, task_name = None, model_name = None, *, reset = False, config = None):
@@ -31,7 +33,7 @@ class WordFrequency:
         model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
 
         if not reset and os.path.isfile(model_path):
-            sys.stdout.write(f"Model {model_name} already exists. Skipping.\n")
+            cls.log(f"Model {model_name} already exists. Skipping.")
             return
 
         xml_directory = config.get_wikipedia_xml_directory()
@@ -41,12 +43,12 @@ class WordFrequency:
 
         language = Language.get_class(config.get_language(must = True))
 
-        sys.stdout.write("Building word_frequency model...\n")
+        cls.log("Building word_frequency model...")
         instance = cls.create_count_map(language = language, tokenizer = tokenizer, xml_directory = xml_directory)
-        sys.stdout.write("Done.\n")
+        cls.log("Done.")
 
         instance.save(model_path)
-        sys.stdout.write(f"Saved to {model_path}.\n")
+        cls.log(f"Saved to {model_path}.")
 
     @classmethod
     def create_count_map(cls, language, tokenizer, xml_directory):
@@ -61,7 +63,7 @@ class WordFrequency:
 
             words = []
 
-            for sentence in Parser.to_sentences(entry.mediawiki, language = language):
+            for sentence in Parser.to_sentences(entry["mediawiki"], language = language):
                 for word in tokenizer.split(sentence):
                     words.append(word)
 
@@ -79,15 +81,24 @@ class WordFrequency:
         return cls(frequency, document_frequency)
 
     @classmethod
+    def load_from_config(cls, task_name = None, model_name = None, *, config = None):
+        if config is None:
+            config = Config(task_name)
+
+        algorithm = config.get_parameter(f"model.{model_name}.{'algorithm'}", must = True)
+
+        if algorithm != cls.algorithm_name:
+            raise WScraperAlgorithmError(f"Algorithm mismatched. Assumed `{cls.algorithm_name}` but got `{algorithm}`.")
+
+        model_directory = config.make_model_directory()
+        model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
+
+        return cls.load(model_path)
+
+    @classmethod
     def load(cls, path):
-        frequency = {}
-        document_frequency = {}
-
-        df = pd.read_csv(path)
-
-        for _, row in df.iterrows():
-            frequency[row.word] = row.frequency
-            document_frequency[row.word] = row.document_frequency
+        with open(path, "rb") as f:
+            frequency, document_frequency = pickle.load(f)
 
         return cls(frequency, document_frequency)
 
@@ -96,6 +107,5 @@ class WordFrequency:
         self.document_frequency = document_frequency
 
     def save(self, path):
-        records = [(word, self.frequency[word], self.document_frequency[word]) for word in self.frequency.keys()]
-
-        pd.DataFrame(records, columns = ["word", "frequency", "document_frequency"]).to_csv(path, index = False)
+        with open(path, "wb") as f:
+            pickle.dump([self.frequency, self.document_frequency], f)

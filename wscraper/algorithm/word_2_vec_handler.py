@@ -1,7 +1,6 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-
 import glob
 import os
 from gensim.models.word2vec import Word2Vec, PathLineSentences
@@ -11,13 +10,17 @@ from ..utility import *
 from ..base import *
 from ..tokenizer import *
 from ..language import *
+from .tool.workspace import *
+from .tool.logger import *
 from .w_scraper_algorithm_error import *
 
 
-class Word2VecHandler:
+class Word2VecHandler(Logger):
 
     algorithm_name = "word2vec"
     model_file_suffix = ".model"
+
+    logger_name = "word2vec"
 
     @classmethod
     def build(cls, task_name = None, model_name = None, *, reset = False, config = None):
@@ -34,16 +37,16 @@ class Word2VecHandler:
         model_path = os.path.join(model_directory, model_name + cls.model_file_suffix)
 
         if not reset and os.path.isfile(model_path):
-            sys.stdout.write(f"Model {model_name} already exists. Skipping.\n")
+            cls.log(f"Model {model_name} already exists. Skipping.")
             return
 
         if "min_count" not in arguments:
-            sys.stdout.write("Parameter min_count is not set. Value min_count = 1 is set.\n")
+            cls.log("Parameter min_count is not set. Value min_count = 1 is set.")
             arguments["min_count"] = 1
 
         if "workers" not in arguments:
             worker = config.get_worker(must = True)
-            sys.stdout.write(f"Parameter workers is not set. wscraper config worker = {worker} is set.\n")
+            cls.log(f"Parameter workers is not set. wscraper config worker = {worker} is set.")
             arguments["workers"] = worker
 
         tokenizer_property = config.get_tokenizer(must = True)
@@ -54,45 +57,12 @@ class Word2VecHandler:
         xml_directory = config.get_wikipedia_xml_directory()
         pls_directory = config.make_workspace("pls")
 
-        pls_flag = True
+        Workspace.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer, reset = reset)
 
-        existing_files = glob.glob(os.path.join(pls_directory, "*.txt"))
-
-        if len(existing_files) > 0:
-            if not reset:
-                sys.stdout.write(f"Path line sentences already exist at {pls_directory}. Skipping.\n")
-                pls_flag = False
-            else:
-                sys.stdout.write(f"Path line sentences exist at {pls_directory}. Removing.\n")
-                for path in existing_files:
-                    os.remove(path)
-                sys.stdout.write("Removed.\n")
-
-        if pls_flag:
-            sys.stdout.write("Creating path line sentences...\n")
-            cls.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer)
-            sys.stdout.write("Done!\n")
-
-        sys.stdout.write("Creating Word2Vec model.\n")
+        cls.log("Creating Word2Vec model...")
         model = cls.create_model(pls_directory, ** arguments)
         model.save(model_path)
-        sys.stdout.write(f"Word2Vec model was saved to {model_path}.\n")
-
-    @classmethod
-    def create_path_line_sentences(cls, xml_directory, pls_directory, language, tokenizer):
-        page_iterator = PageIterator(xml_directory)
-
-        with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer, tqdm.tqdm(page_iterator) as pager:
-            for page in pager:
-                pager.set_postfix(OrderedDict(reader = f"{page_iterator.i_path}/{page_iterator.n_path}", writer = f"{writer.file_count}"))
-                entry = Parser.page_to_class(page, language = language, entry_only = True)
-
-                if entry is None:
-                    continue
-
-                lines = [" ".join(tokenizer.split(sentence)) for sentence in Parser.to_sentences(entry.mediawiki, language = language)]
-
-                writer.write("\n".join(lines), len(lines))
+        cls.log(f"Word2Vec model was saved to {model_path}.")
 
     @classmethod
     def create_model(cls, pls_directory, ** arguments):
