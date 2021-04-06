@@ -1,7 +1,6 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-
 import sys
 import argparse
 
@@ -32,13 +31,21 @@ Command:
     wscraper unset [options]
         unset parameters
     wscraper model new [model_name] [algorithm_name]
+        create model for current task
     wscraper model delete [model_name]
+        delete model for current task
     wscraper model build [model_name list]
+        build model
     wscraper tokenizer [tokenizer_method]
+        set tokenizer
     wscraper root status
+        check root configuration
     wscraper root set
+        set root parameters
     wscraper root unset
-    wscraper wikipedia
+        unset root parameters
+    wscraper list
+        list tasks and wikipedia resources
 """
 
 
@@ -60,8 +67,7 @@ def command():
         "model": command_model,
         "tokenizer": command_tokenizer,
         "root": command_root,
-        "wikipedia": command_wikipedia,
-        "task": command_task
+        "list": command_list
     }
 
     if name in ["help", "--help"]:
@@ -310,17 +316,9 @@ def command_tokenizer(args):
     Config.command_tokenizer(args.method)
 
 
-def command_wikipedia(args):
+def command_list(args):
     if len(args) != 0:
-        sys.stderr.write("Command `wscraper wikipedia` requires no arguments.\n")
+        sys.stderr.write("Command `wscraper list` requires no arguments.\n")
         sys.exit(1)
 
-    Config.command_wikipedia()
-
-
-def command_task(args):
-    if len(args) != 0:
-        sys.stderr.write("Command `wscraper task` requires no arguments.\n")
-        sys.exit(1)
-
-    Config.command_task()
+    Config.command_list()

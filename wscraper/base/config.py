@@ -62,10 +62,12 @@ class Config:
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
-        print("wikipedia:", config["wikipedia"] or "[not set]")
-        print("worker:", config["worker"] or "[not set]")
-        print("language:", config["language"] or "[not set]")
-        print("page_chunk:", config["page_chunk"])
+        sys.stdout.write("\nRoot Status\n\n")
+        sys.stdout.write(f"wikipedia: {config['wikipedia'] or '[not set]'}\n")
+        sys.stdout.write(f"worker: {config['worker'] or '[not set]'}\n")
+        sys.stdout.write(f"language: {config['language'] or '[not set]'}\n")
+        sys.stdout.write(f"page_chunk: {config['page_chunk']}\n")
+        sys.stdout.write("\n")
 
     @classmethod
     def command_root_set(cls, wikipedia, worker, language, page_chunk):
@@ -195,21 +197,6 @@ class Config:
         sys.stdout.write(f"Task switched to {name}.\n")
 
     @classmethod
-    def command_task(cls):
-        cls.check_root_directory_exists()
-
-        list_directory = [d for d in glob.glob(os.path.join(Constant.task_directory, "*")) if os.path.isdir(d)]
-
-        if len(list_directory) == 0:
-            sys.stdout.write("There are no tasks.\n")
-            return
-
-        sys.stdout.write("Tasks:\n")
-        for directory in list_directory:
-            name = os.path.basename(directory)
-            sys.stdout.write(f"- {name}\n")
-
-    @classmethod
     def command_set(cls, wikipedia, worker, language):
         cls.check_root_directory_exists()
 
@@ -272,24 +259,38 @@ class Config:
         config.set_tokenizer(name)
 
     @classmethod
-    def command_wikipedia(cls):
-        items = cls.list_wikipedia()
-        if len(items) == 0:
-            print("Available Wikipedia is nothing.")
-        else:
-            print("Available Wikipedia:")
-            for item in items:
-                print(f"  - {item}")
+    def command_list(cls):
+        sys.stdout.write("\n")
 
-    @classmethod
-    def list_wikipedia(cls):
-        result = []
+        list_task = []
+
+        for path in glob.glob(os.path.join(Constant.task_directory, "*")):
+            if os.path.isdir(path):
+                list_task.append(os.path.basename(path))
+
+        if len(list_task) == 0:
+            sys.stdout.write("Available task is nothing.\n")
+        else:
+            sys.stdout.write("Available Task:\n")
+            for item in list_task:
+                sys.stdout.write(f"  - {item}\n")
+
+        sys.stdout.write("\n")
+
+        list_wikipedia = []
 
         for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
             if os.path.isdir(path):
-                result.append(os.path.basename(path))
+                list_wikipedia.append(os.path.basename(path))
 
-        return result
+        if len(list_wikipedia) == 0:
+            sys.stdout.write("Available Wikipedia is nothing.\n")
+        else:
+            sys.stdout.write("Available Wikipedia:\n")
+            for item in list_wikipedia:
+                sys.stdout.write(f"  - {item}\n")
+
+        sys.stdout.write("\n")
 
     @classmethod
     def load_root_config(cls):
