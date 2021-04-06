@@ -62,12 +62,15 @@ class Config:
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
-        print("wikipedia:", config["wikipedia"] or "[not set]")
-        print("worker:", config["worker"] or "[not set]")
-        print("language:", config["language"] or "[not set]")
+        sys.stdout.write("\nRoot Status\n\n")
+        sys.stdout.write(f"wikipedia: {config['wikipedia'] or '[not set]'}\n")
+        sys.stdout.write(f"worker: {config['worker'] or '[not set]'}\n")
+        sys.stdout.write(f"language: {config['language'] or '[not set]'}\n")
+        sys.stdout.write(f"page_chunk: {config['page_chunk']}\n")
+        sys.stdout.write("\n")
 
     @classmethod
-    def command_root_set(cls, wikipedia, worker, language):
+    def command_root_set(cls, wikipedia, worker, language, page_chunk):
         cls.check_root_directory_exists()
 
         config = cls.load_root_config()
@@ -79,16 +82,22 @@ class Config:
             config["wikipedia"] = wikipedia
 
         if worker is not None:
-            if int(worker) not in range(1, 64 + 1):
-                raise WScraperConfigError("Worker should be integer in range from 1 to 64.\n")
+            if not (worker >= Constant.min_worker and worker <= Constant.max_worker):
+                raise WScraperConfigError(f"Worker should be integer in range from {Constant.min_worker} to {Constant.max_worker}.")
 
-            config["worker"] = int(worker)
+            config["worker"] = worker
 
         if language is not None:
             if language not in Constant.available_languages:
-                raise WScraperConfigError(f"language `{language}` is not supported")
+                raise WScraperConfigError(f"language `{language}` is not supported.")
 
             config["language"] = language
+
+        if page_chunk is not None:
+            if not (page_chunk >= Constant.min_page_chunk and page_chunk <= Constant.max_page_chunk):
+                raise WScraperConfigError(f"page_chunk should satisfy {Constant.min_page_chunk} <= page_chunk <= {Constant.max_page_chunk}.")
+
+            config["page_chunk"] = page_chunk
 
         FileManager.save_json(Constant.root_config, config)
 
@@ -250,24 +259,38 @@ class Config:
         config.set_tokenizer(name)
 
     @classmethod
-    def command_wikipedia(cls):
-        items = cls.list_wikipedia()
-        if len(items) == 0:
-            print("Available Wikipedia is nothing.")
-        else:
-            print("Available Wikipedia:")
-            for item in items:
-                print(f"  - {item}")
+    def command_list(cls):
+        sys.stdout.write("\n")
 
-    @classmethod
-    def list_wikipedia(cls):
-        result = []
+        list_task = []
+
+        for path in glob.glob(os.path.join(Constant.task_directory, "*")):
+            if os.path.isdir(path):
+                list_task.append(os.path.basename(path))
+
+        if len(list_task) == 0:
+            sys.stdout.write("Available task is nothing.\n")
+        else:
+            sys.stdout.write("Available Task:\n")
+            for item in list_task:
+                sys.stdout.write(f"  - {item}\n")
+
+        sys.stdout.write("\n")
+
+        list_wikipedia = []
 
         for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
             if os.path.isdir(path):
-                result.append(os.path.basename(path))
+                list_wikipedia.append(os.path.basename(path))
 
-        return result
+        if len(list_wikipedia) == 0:
+            sys.stdout.write("Available Wikipedia is nothing.\n")
+        else:
+            sys.stdout.write("Available Wikipedia:\n")
+            for item in list_wikipedia:
+                sys.stdout.write(f"  - {item}\n")
+
+        sys.stdout.write("\n")
 
     @classmethod
     def load_root_config(cls):

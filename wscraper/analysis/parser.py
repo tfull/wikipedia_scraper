@@ -3,7 +3,6 @@
 
 import re
 
-from ..page import *
 from ..utility import *
 
 
@@ -40,8 +39,11 @@ class Parser:
             if entry_only:
                 return None
             else:
-                target = redirect.attrib["title"]
-                return Redirection(source = title, target = target)
+                return {
+                    "type": "redirection",
+                    "source": title,
+                    "target": redirect.attrib["title"]
+                }
 
         revision = page.find("revision")
         text = revision.find("text").text
@@ -51,7 +53,11 @@ class Parser:
 
         text = "".join(filter(lambda c: ord(c) < 0x10000, text))
 
-        return Entry(title = title, mediawiki = text)
+        return {
+            "type": "entry",
+            "title": title,
+            "mediawiki": text
+        }
 
     @classmethod
     def interpret_mediawiki(cls, mediawiki, *, language = None):

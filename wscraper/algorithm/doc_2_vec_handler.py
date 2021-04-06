@@ -3,24 +3,26 @@
 
 import glob
 import os
-from gensim.models.word2vec import Word2Vec, PathLineSentences
+import tqdm
+from gensim.models.doc2vec import Doc2Vec
 
 from ..analysis import *
 from ..utility import *
 from ..base import *
 from ..tokenizer import *
 from ..language import *
-from .tool.workspace import *
-from .tool.logger import *
 from .w_scraper_algorithm_error import *
+from .tool.logger import *
+from .tool.workspace import *
+from .tool.tagged_document_iterator import *
 
 
-class Word2VecHandler(Logger):
+class Doc2VecHandler(Logger):
 
-    algorithm_name = "word2vec"
+    algorithm_name = "doc2vec"
     model_file_suffix = ".model"
 
-    logger_name = "word2vec"
+    logger_name = "doc2vec"
 
     @classmethod
     def build(cls, task_name = None, model_name = None, *, reset = False, config = None):
@@ -59,14 +61,14 @@ class Word2VecHandler(Logger):
 
         Workspace.create_path_line_sentences(xml_directory, pls_directory, language, tokenizer, reset = reset)
 
-        cls.log("Creating Word2Vec model...")
-        model = cls.create_model(pls_directory, ** arguments)
+        cls.log("Creating a doc2vec model.")
+        model = cls.create_model(TaggedDocumentIterator(pls_directory), ** arguments)
         model.save(model_path)
-        cls.log(f"Word2Vec model was saved to {model_path}.")
+        cls.log(f"A doc2vec model was saved to {model_path}.")
 
     @classmethod
-    def create_model(cls, pls_directory, ** arguments):
-        return Word2Vec(PathLineSentences(pls_directory), ** arguments)
+    def create_model(cls, documents, ** arguments):
+        return Doc2Vec(documents = documents, ** arguments)
 
     @classmethod
     def load_from_config(cls, task_name = None, model_name = None, *, config = None):
@@ -85,7 +87,7 @@ class Word2VecHandler(Logger):
 
     @classmethod
     def load(cls, path):
-        return cls(Word2Vec.load(path))
+        return cls(Doc2Vec.load(path))
 
     def __init__(self, model):
         self.model = model

@@ -7,7 +7,7 @@ import os
 
 class Constant:
 
-    root_directory = os.path.join(os.environ["HOME"], ".wscraper")
+    root_directory = os.environ.get("WSCRAPER_ROOT") or os.path.join(os.environ["HOME"], ".wscraper")
 
     root_config = os.path.join(root_directory, "config.yml")
     root_status = os.path.join(root_directory, "status.yml")
@@ -22,6 +22,7 @@ class Constant:
 
     available_algorithms = [
         "word2vec",
+        "doc2vec",
         "word_frequency"
     ]
 
@@ -30,3 +31,8 @@ class Constant:
         "janome",
         "nltk"
     ]
+
+    min_page_chunk = 100
+    max_page_chunk = 10 ** 7
+    min_worker = 1
+    max_worker = 64

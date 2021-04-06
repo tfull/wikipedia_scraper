@@ -12,7 +12,7 @@ def get_readme():
 
 setup(
     name = "wscraper",
-    version = "0.0.1",
+    version = "0.0.2",
     license = "MIT License",
     author = "T.Furukawa",
     author_email = "tfurukawa.mail@gmail.com",
@@ -20,9 +20,8 @@ setup(
     packages = find_packages(),
     keywords = ["Wikipedia"],
     description = "Scraping documents from a dump XML file of Wikipedia.",
-    description_content_type = "text/plain",
-    # long_description = get_readme(),
-    # long_description_content_type = "text/markdown",
+    long_description = get_readme(),
+    long_description_content_type = "text/markdown",
     entry_points = {
         "console_scripts": [
             "wscraper = wscraper.console:command"

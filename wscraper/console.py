@@ -1,7 +1,6 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-
 import sys
 import argparse
 
@@ -16,9 +15,9 @@ Wikipedia Scraper
 
 Command:
     wscraper initialize
-        make directory ~/.wscraper and config file
+        make root directory of wscraper and config file
     wscraper init
-        same as initialize
+        same as `wscraper initialize`
     wscraper new [task_name]
         create pattern named [task_name]
     wscraper status
@@ -32,13 +31,21 @@ Command:
     wscraper unset [options]
         unset parameters
     wscraper model new [model_name] [algorithm_name]
+        create model for current task
     wscraper model delete [model_name]
+        delete model for current task
     wscraper model build [model_name list]
+        build model
     wscraper tokenizer [tokenizer_method]
+        set tokenizer
     wscraper root status
+        check root configuration
     wscraper root set
+        set root parameters
     wscraper root unset
-    wscraper wikipedia
+        unset root parameters
+    wscraper list
+        list tasks and wikipedia resources
 """
 
 
@@ -50,32 +57,27 @@ def command():
     name = sys.argv[1]
     args = sys.argv[2:]
 
+    map_command_function = {
+        "new": command_new,
+        "status": command_status,
+        "switch": command_switch,
+        "import": command_import,
+        "set": command_set,
+        "unset": command_unset,
+        "model": command_model,
+        "tokenizer": command_tokenizer,
+        "root": command_root,
+        "list": command_list
+    }
+
     if name in ["help", "--help"]:
         sys.stdout.write(help_string.lstrip())
     elif name in ["initialize", "init"]:
         command_initialize(args)
-    elif name == "new":
-        command_new(args)
-    elif name == "status":
-        command_status(args)
-    elif name == "switch":
-        command_switch(args)
-    elif name == "import":
-        command_import(args)
-    elif name == "set":
-        command_set(args)
-    elif name == "unset":
-        command_unset(args)
-    elif name == "model":
-        command_model(args)
-    elif name == "tokenizer":
-        command_tokenizer(args)
-    elif name == "root":
-        command_root(args)
-    elif name == "wikipedia":
-        command_wikipedia(args)
+    elif name in map_command_function:
+        map_command_function[name](args)
     else:
-        sys.stderr.write(f"No such command {name}.\n{help_string}")
+        sys.stderr.write(f"No such command `{name}`.\n{help_string}")
         sys.exit(1)
 
 
@@ -247,12 +249,13 @@ def command_root_set(args):
     )
 
     parser.add_argument("--wikipedia", help = "Wikipedia name")
-    parser.add_argument("--worker", help = "the number of threads for working")
+    parser.add_argument("--worker", type=int, help = "the number of threads for working")
     parser.add_argument("--language", help = "Wikipedia language")
+    parser.add_argument("--page_chunk", type=int, help = "page per xml file")
 
     args = parser.parse_args(args)
 
-    Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language)
+    Config.command_root_set(wikipedia = args.wikipedia, worker = args.worker, language = args.language, page_chunk = args.page_chunk)
 
 
 def command_root_unset(args):
@@ -313,9 +316,9 @@ def command_tokenizer(args):
     Config.command_tokenizer(args.method)
 
 
-def command_wikipedia(args):
+def command_list(args):
     if len(args) != 0:
-        sys.stderr.write("Command `wscraper wikipedia` requires no arguments.\n")
+        sys.stderr.write("Command `wscraper list` requires no arguments.\n")
         sys.exit(1)
 
-    Config.command_wikipedia()
+    Config.command_list()

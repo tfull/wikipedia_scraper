@@ -54,7 +54,7 @@ class Builder:
 
     @classmethod
     def split_to_xmls(cls, xml_path, output_directory, *, chunk = 10000):
-        if not (type(chunk) == int and chunk in range(100, 10 ** 7 + 1)):
+        if not (type(chunk) == int and chunk >= Constant.min_page_chunk and chunk <= Constant.max_page_chunk):
             raise WScraperException("Config page_chunk must satisfy 100 <= chunk <= 10 ** 7.")
 
         re_start = re.compile(r"<page>")
