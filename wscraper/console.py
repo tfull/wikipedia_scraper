@@ -46,6 +46,12 @@ Command:
         unset root parameters
     wscraper list
         list tasks and wikipedia resources
+    wscraper database status
+        check database status for current task
+    wscraper database set
+        set parameters for the database of current task
+    wscraper database save
+        save data into database
 """
 
 
@@ -67,7 +73,8 @@ def command():
         "model": command_model,
         "tokenizer": command_tokenizer,
         "root": command_root,
-        "list": command_list
+        "list": command_list,
+        "database": command_database
     }
 
     if name in ["help", "--help"]:
@@ -322,3 +329,61 @@ def command_list(args):
         sys.exit(1)
 
     Config.command_list()
+
+
+def command_database(args):
+    if len(args) == 0:
+        sys.stderr.write("wscraper database\n\n")
+        sys.stderr.write("  wscraper database status\n")
+        sys.stderr.write("  wscraper database set [options]\n")
+        sys.stderr.write("  wscraper database save\n")
+        sys.exit(1)
+
+    name = args[0]
+
+    if name == "status":
+        command_database_status(args[1:])
+    elif name == "set":
+        command_database_set(args[1:])
+    elif name == "save":
+        command_database_save(args[1:])
+    else:
+        sys.stderr.write(f"No such command {name}.\n")
+        sys.stderr.write("Command `wscraper database` takes `status`, `set` or `save` for first argument.\n")
+        sys.exit(1)
+
+
+def command_database_status(args):
+    if len(args) != 0:
+        sys.stderr.write("Command `wscraper database status` requires no arguments.\n")
+        sys.exit(1)
+
+    Config.command_database_status()
+
+
+def command_database_set(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper database set",
+        description = "Command `wscraper database set` sets config of database."
+    )
+
+    parser.add_argument("--dialect", help = "dialect")
+    parser.add_argument("--driver", help = "driver")
+    parser.add_argument("--user", help = "user name")
+    parser.add_argument("--password", help = "password")
+    parser.add_argument("--host", help = "host")
+    parser.add_argument("--port", type = int, help = "port")
+    parser.add_argument("--database", help = "database name")
+    parser.add_argument("--charset", help = "charset")
+
+    args = parser.parse_args(args)
+
+    Config.command_database_set(vars(args))
+
+
+def command_database_save(args):
+    if len(args) != 0:
+        sys.stderr.write("Command `wscraper database save` requires no arguments.\n")
+        sys.exit(1)
+
+    DatabaseHandler.command_database_save()

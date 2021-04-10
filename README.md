@@ -88,19 +88,22 @@ A file wikipedia.xml assumes like `(lang)wiki-(date)-pages-articles-multistream.
 wscraper import /path/to/wikipedia.xml --name my_wp
 ```
 
-### 5. Checking Wikipedia Resources
+### 5. Checking Tasks and Wikipedia Resources
 
 This command is also independent of task 2, 3.
 
-It can check wikipedia resources.
+It can check tasks and Wikipedia resources.
 
 ```shell
-wscraper wikipedia
+wscraper list
 ```
 
 output
 ```text
-Available Wikipedia:
+Available task:
+  - my_task
+
+Available wikipedia:
   - my_wp
 ```
 
