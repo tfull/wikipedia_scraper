@@ -6,7 +6,6 @@ import sys
 import glob
 import os
 import tqdm
-from collections import OrderedDict
 
 from ..utility import *
 from ..base import *
@@ -69,7 +68,7 @@ class Builder:
         with tqdm.tqdm(reader) as progress:
             with reader, writer:
                 for line in progress:
-                    progress.set_postfix(OrderedDict(entry = writer.total_count, page = writer.file_count))
+                    progress.set_postfix(writer.postfix_for_tqdm())
 
                     if re_start.search(line):
                         flag = True

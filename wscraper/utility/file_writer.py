@@ -1,6 +1,8 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
+from collections import OrderedDict
+
 
 class FileWriter:
 
@@ -45,3 +47,6 @@ class FileWriter:
 
     def __exit__(self, ex_type, ex_value, trace):
         self.finish()
+
+    def postfix_for_tqdm(self):
+        return OrderedDict(entry = self.total_count, page = self.file_count)

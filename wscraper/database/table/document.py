@@ -2,15 +2,15 @@
 # This software is released under the MIT License, see LICENSE.
 
 from sqlalchemy.schema import Column
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Text
 
 from .base import *
 
 
-class Redirection(Base):
+class Document(Base):
 
-    __tablename__ = "redirections"
+    __tablename__ = "documents"
 
     id = Column(Integer, primary_key = True)
-    source = Column(String(255), index = True)
-    target = Column(String(255), index = True)
+    title = Column(String(255), index = True)
+    text = Column(Text(4294000000))

@@ -287,11 +287,7 @@ class Config:
 
         sys.stdout.write("\n")
 
-        list_wikipedia = []
-
-        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
-            if os.path.isdir(path):
-                list_wikipedia.append(os.path.basename(path))
+        list_wikipedia = cls.list_wikipedia()
 
         if len(list_wikipedia) == 0:
             sys.stdout.write("Available Wikipedia is nothing.\n")
@@ -314,6 +310,16 @@ class Config:
 
         config = Config()
         config.set_database_parameters(parameters)
+
+    @classmethod
+    def list_wikipedia(cls):
+        items = []
+
+        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
+            if os.path.isdir(path):
+                items.append(os.path.basename(path))
+
+        return items
 
     @classmethod
     def load_root_config(cls):
@@ -362,9 +368,9 @@ class Config:
         FileManager.save_json(path, self.config)
 
     def print_status(self):
-        print("current task:", self.name)
+        print("\ncurrent task:", self.name)
 
-        print("")
+        print()
 
         wikipedia = self.config["wikipedia"]
 
@@ -419,6 +425,8 @@ class Config:
             print("database:")
             for key, value in sorted(database.items()):
                 print(f"  {key}: {value}")
+
+        print()
 
     def get_parameter(self, key, *, must = False):
         data = self.config
@@ -643,9 +651,12 @@ class Config:
     def set_database_parameters(self, parameters):
         database = self.get_parameter("database", must = True)
 
-        for key in parameters:
+        for key, value in parameters.items():
+            if value is None:
+                continue
+
             before = database.get(key) or "[not set]"
-            after = parameters[key]
+            after = value
             database[key] = after
             sys.stdout.write(f"database config `{key}` changed: `{before}` -> `{after}`\n")
 

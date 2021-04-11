@@ -33,7 +33,10 @@ class Workspace(Logger):
 
         with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer, tqdm.tqdm(page_iterator) as pager:
             for page in pager:
-                pager.set_postfix(OrderedDict(reader = f"{page_iterator.i_path}/{page_iterator.n_path}", writer = f"{writer.file_count}"))
+                postfix = page_iterator.postfix_for_tqdm()
+                postfix["writer"] = writer.file_count
+                pager.set_postfix(postfix)
+
                 entry = Parser.page_to_class(page, language = language, entry_only = True)
 
                 if entry is None:
