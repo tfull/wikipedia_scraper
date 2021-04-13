@@ -12,5 +12,5 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key = True)
-    title = Column(String(255), index = True)
-    text = Column(Text(4294000000))
+    title = Column(String(255, collation = "utf8_bin"), index = True)
+    text = Column(Text(4294000000, collation = "utf8_bin"))

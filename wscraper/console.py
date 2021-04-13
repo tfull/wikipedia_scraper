@@ -26,9 +26,9 @@ Command:
         change task to [task_name]
     wscraper import [xml path] [options]
         read [xml path] and locate wikipedia resource directory
-    wscraper set [options]
+    wscraper set [parameters]
         set parameters
-    wscraper unset [options]
+    wscraper unset [parameters]
         unset parameters
     wscraper model new [model_name] [algorithm_name]
         create model for current task
@@ -40,17 +40,19 @@ Command:
         set tokenizer
     wscraper root status
         check root configuration
-    wscraper root set
+    wscraper root set [parameters]
         set root parameters
-    wscraper root unset
+    wscraper root unset [parameters]
         unset root parameters
     wscraper list
         list tasks and wikipedia resources
     wscraper database status
         check database status for current task
-    wscraper database set
+    wscraper database set [parameters]
         set parameters for the database of current task
-    wscraper database save
+    wscraper database migrate [options]
+        create tables of database
+    wscraper database seed [names] [options]
         save data into database
 """
 

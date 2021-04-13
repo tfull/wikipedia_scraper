@@ -12,5 +12,5 @@ class Entry(Base):
     __tablename__ = "entries"
 
     id = Column(Integer, primary_key = True)
-    title = Column(String(255), index = True)
-    mediawiki = Column(Text(4294000000))
+    title = Column(String(255, collation = "utf8_bin"), index = True)
+    mediawiki = Column(Text(4294000000, collation = "utf8_bin"))

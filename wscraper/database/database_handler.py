@@ -110,12 +110,12 @@ class DatabaseHandler:
 
                 if entry["type"] == "entry":
                     if "entry" in names:
-                        session.add(Entry(mediawiki = entry["mediawiki"]))
+                        session.add(Entry(title = entry["title"], mediawiki = entry["mediawiki"]))
                         session.flush()
 
                     if "document" in names:
                         document = Parser.to_plain_text(entry["mediawiki"], language = language)
-                        session.add(Document(text = document))
+                        session.add(Document(title = entry["title"], text = document))
                         session.flush()
 
                 elif entry["type"] == "redirection":

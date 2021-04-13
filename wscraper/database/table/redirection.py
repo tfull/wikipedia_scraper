@@ -12,5 +12,5 @@ class Redirection(Base):
     __tablename__ = "redirections"
 
     id = Column(Integer, primary_key = True)
-    source = Column(String(255), index = True)
-    target = Column(String(255), index = True)
+    source = Column(String(255, collation = "utf8_bin"), index = True)
+    target = Column(String(255, collation = "utf8_bin"), index = True)
