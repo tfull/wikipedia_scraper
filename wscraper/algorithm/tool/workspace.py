@@ -2,7 +2,6 @@
 # This software is released under the MIT License, see LICENSE.
 
 import sys
-import tqdm
 
 from ...utility import *
 from ...analysis import *
@@ -29,11 +28,14 @@ class Workspace(Logger):
 
         cls.log("Creating path line sentences...")
 
-        page_iterator = PageIterator(xml_directory)
+        pager = PageIterator(xml_directory)
+        writer = FileWriter(pls_directory, "{:06d}.txt", 10000)
+        progress = ProgressManager(writer)
 
-        with FileWriter(pls_directory, "{:06d}.txt", 10000) as writer, tqdm.tqdm(page_iterator) as pager:
+        with writer, progress:
             for page in pager:
-                pager.set_postfix(OrderedDict(reader = f"{page_iterator.i_path}/{page_iterator.n_path}", writer = f"{writer.file_count}"))
+                progress.update()
+
                 entry = Parser.page_to_class(page, language = language, entry_only = True)
 
                 if entry is None:

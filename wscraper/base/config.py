@@ -31,7 +31,17 @@ class Config:
         "worker": None,
         "language": None,
         "tokenizer": {},
-        "model": {}
+        "model": {},
+        "database": {
+            "dialect": None,
+            "driver": None,
+            "user": None,
+            "password": None,
+            "host": None,
+            "port": None,
+            "database": None,
+            "charset": None
+        }
     }
 
     template_root_status = {
@@ -277,11 +287,7 @@ class Config:
 
         sys.stdout.write("\n")
 
-        list_wikipedia = []
-
-        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
-            if os.path.isdir(path):
-                list_wikipedia.append(os.path.basename(path))
+        list_wikipedia = cls.list_wikipedia()
 
         if len(list_wikipedia) == 0:
             sys.stdout.write("Available Wikipedia is nothing.\n")
@@ -291,6 +297,29 @@ class Config:
                 sys.stdout.write(f"  - {item}\n")
 
         sys.stdout.write("\n")
+
+    @classmethod
+    def command_database_status(cls):
+        cls.check_root_directory_exists()
+
+        Config().print_database_status()
+
+    @classmethod
+    def command_database_set(cls, parameters):
+        cls.check_root_directory_exists()
+
+        config = Config()
+        config.set_database_parameters(parameters)
+
+    @classmethod
+    def list_wikipedia(cls):
+        items = []
+
+        for path in glob.glob(os.path.join(Constant.wikipedia_directory, "*")):
+            if os.path.isdir(path):
+                items.append(os.path.basename(path))
+
+        return items
 
     @classmethod
     def load_root_config(cls):
@@ -339,9 +368,9 @@ class Config:
         FileManager.save_json(path, self.config)
 
     def print_status(self):
-        print("current task:", self.name)
+        print("\ncurrent task:", self.name)
 
-        print("")
+        print()
 
         wikipedia = self.config["wikipedia"]
 
@@ -387,6 +416,17 @@ class Config:
                 print("    arguments:")
                 for k, v in model[key]["arguments"].items():
                     print(f"      {k}: {v}")
+
+        database = self.config["database"]
+
+        if len([v for v in database.values() if v is not None]) == 0:
+            print("database: [not set]")
+        else:
+            print("database:")
+            for key, value in sorted(database.items()):
+                print(f"  {key}: {value}")
+
+        print()
 
     def get_parameter(self, key, *, must = False):
         data = self.config
@@ -589,3 +629,36 @@ class Config:
         model_directory = os.path.join(self.this_directory, "model")
         os.makedirs(model_directory, exist_ok = exist_ok)
         return model_directory
+
+    def print_database_status(self):
+        database = self.get_parameter("database", must = True)
+
+        print("current task:", self.name)
+
+        print("")
+        print("database:")
+
+        print("  dialect:", database.get("dialect") or "[not set]")
+        print("  driver:", database.get("driver") or "[not set]")
+        print("  user:", database.get("user") or "[not set]")
+        print("  password:", database.get("password") or "[not set]")
+        print("  host:", database.get("host") or "[not set]")
+        print("  port:", database.get("port") or "[not set]")
+        print("  database:", database.get("database") or "[not set]")
+        print("  charset:", database.get("charset") or "[not set]")
+
+
+    def set_database_parameters(self, parameters):
+        database = self.get_parameter("database", must = True)
+
+        for key, value in parameters.items():
+            if value is None:
+                continue
+
+            before = database.get(key) or "[not set]"
+            after = value
+            database[key] = after
+            sys.stdout.write(f"database config `{key}` changed: `{before}` -> `{after}`\n")
+
+        self.config["database"] = database
+        self.save()

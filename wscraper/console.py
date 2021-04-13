@@ -26,9 +26,9 @@ Command:
         change task to [task_name]
     wscraper import [xml path] [options]
         read [xml path] and locate wikipedia resource directory
-    wscraper set [options]
+    wscraper set [parameters]
         set parameters
-    wscraper unset [options]
+    wscraper unset [parameters]
         unset parameters
     wscraper model new [model_name] [algorithm_name]
         create model for current task
@@ -40,12 +40,20 @@ Command:
         set tokenizer
     wscraper root status
         check root configuration
-    wscraper root set
+    wscraper root set [parameters]
         set root parameters
-    wscraper root unset
+    wscraper root unset [parameters]
         unset root parameters
     wscraper list
         list tasks and wikipedia resources
+    wscraper database status
+        check database status for current task
+    wscraper database set [parameters]
+        set parameters for the database of current task
+    wscraper database migrate [options]
+        create tables of database
+    wscraper database seed [names] [options]
+        save data into database
 """
 
 
@@ -67,7 +75,8 @@ def command():
         "model": command_model,
         "tokenizer": command_tokenizer,
         "root": command_root,
-        "list": command_list
+        "list": command_list,
+        "database": command_database
     }
 
     if name in ["help", "--help"]:
@@ -322,3 +331,87 @@ def command_list(args):
         sys.exit(1)
 
     Config.command_list()
+
+
+def command_database(args):
+    if len(args) == 0:
+        sys.stderr.write("wscraper database\n\n")
+        sys.stderr.write("  wscraper database status\n")
+        sys.stderr.write("  wscraper database set [options]\n")
+        sys.stderr.write("  wscraper database migrate\n")
+        sys.stderr.write("  wscraper database seed\n")
+        sys.exit(1)
+
+    name = args[0]
+
+    if name == "status":
+        command_database_status(args[1:])
+    elif name == "set":
+        command_database_set(args[1:])
+    elif name == "migrate":
+        command_database_migrate(args[1:])
+    elif name == "seed":
+        command_database_seed(args[1:])
+    else:
+        sys.stderr.write(f"No such command {name}.\n")
+        sys.stderr.write("Command `wscraper database` takes `status`, `set` or `save` for first argument.\n")
+        sys.exit(1)
+
+
+def command_database_status(args):
+    if len(args) != 0:
+        sys.stderr.write("Command `wscraper database status` requires no arguments.\n")
+        sys.exit(1)
+
+    Config.command_database_status()
+
+
+def command_database_set(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper database set",
+        description = "Command `wscraper database set` sets config of database."
+    )
+
+    parser.add_argument("--dialect", help = "dialect")
+    parser.add_argument("--driver", help = "driver")
+    parser.add_argument("--user", help = "user name")
+    parser.add_argument("--password", help = "password")
+    parser.add_argument("--host", help = "host")
+    parser.add_argument("--port", type = int, help = "port")
+    parser.add_argument("--database", help = "database name")
+    parser.add_argument("--charset", help = "charset")
+
+    args = parser.parse_args(args)
+
+    Config.command_database_set(vars(args))
+
+
+def command_database_migrate(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper database migrate",
+        description = "Command `wscraper database migrate` creates tables of database."
+    )
+
+    parser.add_argument("-r", "--reset", action = "store_true", help = "drop tables if exist")
+
+    args = parser.parse_args(args)
+
+    from .database.database_handler import DatabaseHandler
+
+    DatabaseHandler.command_database_migrate(reset = args.reset)
+
+
+def command_database_seed(args):
+    parser = argparse.ArgumentParser(
+        prog = "wscraper database seed",
+        description = "Command `wscraper database seed` inserts records into database."
+    )
+
+    parser.add_argument("-r", "--reset", action = "store_true", help = "drop tables if exist")
+    parser.add_argument("names", nargs = "*", help = "target data you want, nothing to all")
+
+    args = parser.parse_args(args)
+
+    from .database.database_handler import DatabaseHandler
+
+    DatabaseHandler.command_database_seed(args.names, reset = args.reset)

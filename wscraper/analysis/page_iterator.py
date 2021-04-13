@@ -28,3 +28,6 @@ class PageIterator:
             self.i_path += 1
 
         return self.page_list.pop(0)
+
+    def for_progress_manager(self):
+        return [{ "name": "reader", "value": f"{self.i_path}/{self.n_path}" }]
