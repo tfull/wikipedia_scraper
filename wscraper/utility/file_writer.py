@@ -48,5 +48,5 @@ class FileWriter:
     def __exit__(self, ex_type, ex_value, trace):
         self.finish()
 
-    def postfix_for_tqdm(self):
-        return OrderedDict(entry = self.total_count, page = self.file_count)
+    def for_progress_manager(self):
+        return [{ "name": "writer", "value": self.total_count }, { "name": "page", "value": self.file_count }]

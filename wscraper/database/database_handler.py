@@ -92,16 +92,17 @@ class DatabaseHandler:
         if len(invalid_targets) > 0:
             raise WScraperDatabaseError(f"invalid target: {', '.join(invalid_targets)}")
 
-        page_iterator = PageIterator(xml_directory)
+        pager = PageIterator(xml_directory)
+        progress = ProgressManager(pager)
 
-        with self.session_scope() as session, tqdm.tqdm(page_iterator) as pager:
+        with self.session_scope() as session, progress:
             if reset:
                 tables = [self.targets[name].__table__ for name in names]
                 Base.metadata.drop_all(self.engine, tables = tables)
                 Base.metadata.create_all(self.engine, tables = tables)
 
             for page in pager:
-                pager.set_postfix(page_iterator.postfix_for_tqdm())
+                progress.update()
 
                 entry = Parser.page_to_class(page, language = language, entry_only = False)
 

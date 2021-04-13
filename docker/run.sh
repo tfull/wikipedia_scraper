@@ -1,10 +1,10 @@
 set -eux
 
-pip install tqdm
 pip install sqlalchemy
 pip install gensim
 
 wscraper initialize
+wscraper root set --page_chunk 100
 wscraper new my_task
 wscraper switch my_task
 wscraper import workspace/sample.xml --name mini

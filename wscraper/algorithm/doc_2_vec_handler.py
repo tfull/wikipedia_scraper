@@ -3,7 +3,6 @@
 
 import glob
 import os
-import tqdm
 from gensim.models.doc2vec import Doc2Vec
 
 from ..analysis import *

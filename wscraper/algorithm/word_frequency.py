@@ -1,7 +1,6 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
-import tqdm
 import pickle
 
 from ..analysis import *
@@ -55,30 +54,35 @@ class WordFrequency(Logger):
         document_frequency = {}
         frequency = {}
 
-        for page in tqdm.tqdm(PageIterator(xml_directory)):
-            entry = Parser.page_to_class(page, language = language, entry_only = True)
+        pager = PageIterator(xml_directory)
 
-            if entry is None:
-                continue
+        with ProgressManager(pager) as progress:
+            for page in pager:
+                progress.update()
 
-            words = []
+                entry = Parser.page_to_class(page, language = language, entry_only = True)
 
-            for sentence in Parser.to_sentences(entry["mediawiki"], language = language):
-                for word in tokenizer.split(sentence):
-                    words.append(word)
+                if entry is None:
+                    continue
 
-                    if word not in frequency:
-                        frequency[word] = 1
+                words = []
+
+                for sentence in Parser.to_sentences(entry["mediawiki"], language = language):
+                    for word in tokenizer.split(sentence):
+                        words.append(word)
+
+                        if word not in frequency:
+                            frequency[word] = 1
+                        else:
+                            frequency[word] += 1
+
+                for word in set(words):
+                    if word not in document_frequency:
+                        document_frequency[word] = 1
                     else:
-                        frequency[word] += 1
+                        document_frequency[word] += 1
 
-            for word in set(words):
-                if word not in document_frequency:
-                    document_frequency[word] = 1
-                else:
-                    document_frequency[word] += 1
-
-        return cls(frequency, document_frequency)
+        return cls({ key: (frequency[key], document_frequency[key]) for key in frequency })
 
     @classmethod
     def load_from_config(cls, task_name = None, model_name = None, *, config = None):
@@ -98,14 +102,28 @@ class WordFrequency(Logger):
     @classmethod
     def load(cls, path):
         with open(path, "rb") as f:
-            frequency, document_frequency = pickle.load(f)
+            model = pickle.load(f)
+            return cls(model)
 
-        return cls(frequency, document_frequency)
-
-    def __init__(self, frequency, document_frequency):
-        self.frequency = frequency
-        self.document_frequency = document_frequency
+    def __init__(self, model):
+        self.model = model
 
     def save(self, path):
         with open(path, "wb") as f:
-            pickle.dump([self.frequency, self.document_frequency], f)
+            pickle.dump(self.model, f)
+
+    def get_frequency(self, word):
+        x = self.model.get(word)
+
+        if x is None:
+            return 0
+
+        return x[0]
+
+    def get_document_frequency(self, word):
+        x = self.model.get(word)
+
+        if x is None:
+            return 0
+
+        return x[1]

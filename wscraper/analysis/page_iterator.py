@@ -3,7 +3,6 @@
 
 import os
 import glob
-from collections import OrderedDict
 
 from ..utility import *
 
@@ -30,5 +29,5 @@ class PageIterator:
 
         return self.page_list.pop(0)
 
-    def postfix_for_tqdm(self):
-        return OrderedDict(reader = f"{self.i_path}/{self.n_path}")
+    def for_progress_manager(self):
+        return [{ "name": "reader", "value": f"{self.i_path}/{self.n_path}" }]

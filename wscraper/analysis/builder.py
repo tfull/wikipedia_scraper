@@ -5,7 +5,6 @@ import re
 import sys
 import glob
 import os
-import tqdm
 
 from ..utility import *
 from ..base import *
@@ -65,20 +64,19 @@ class Builder:
         reader = open(xml_path, "r")
         writer = FileWriter(output_directory, "{:04d}.xml", chunk, prefix = "<wikipedia>\n", suffix = "</wikipedia>\n")
 
-        with tqdm.tqdm(reader) as progress:
-            with reader, writer:
-                for line in progress:
-                    progress.set_postfix(writer.postfix_for_tqdm())
+        progress = ProgressManager(writer)
 
-                    if re_start.search(line):
-                        flag = True
+        with reader, writer, progress:
+            for line in reader:
+                progress.update()
 
-                    if flag:
-                        body.append(line)
+                if re_start.search(line):
+                    flag = True
 
-                    if re_end.search(line):
-                        flag = False
-                        writer.write("".join(body), count = 1)
-                        body = []
+                if flag:
+                    body.append(line)
 
-            progress.set_postfix(OrderedDict(entry = writer.total_count, page = writer.file_count))
+                if re_end.search(line):
+                    flag = False
+                    writer.write("".join(body), count = 1)
+                    body = []
