@@ -44,6 +44,10 @@ pip install wscraper
 - word_frequency
   - word frequency and word document frequency
 
+### database
+
+A module `pip install sqlalchemy` is required.
+
 ## How to Work
 
 ### 0. Checking Console Commands
@@ -190,6 +194,22 @@ Please run python code.
 >>> config = Config("my_task")
 >>> config.update_model_arguments("my_model", { "key1": value1, "key2": value2, ... })
 >>> config.delete_model_arguments("my_model", [ "key1", "key2", ...]) # if you want to delete parameters
+```
+
+### 14. Database Migration
+
+Tables of configurated database are created.
+
+```
+wscraper database migrate
+```
+
+### 15. Inserting Records for Database
+
+Records of articles are inserted for tables.
+
+```
+wscraper database seed
 ```
 
 ## License
