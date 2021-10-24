@@ -2,6 +2,5 @@
 # This software is released under the MIT License, see LICENSE.
 
 
-from .parser import *
-from .page_iterator import *
-from .entry_iterator import *
+class WScraperLanguageError(WScraperException):
+    pass

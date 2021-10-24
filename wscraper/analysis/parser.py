@@ -4,6 +4,7 @@
 import re
 
 from ..utility import *
+from ..page import *
 
 
 RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
@@ -23,7 +24,7 @@ RE_LIST       = re.compile(r"\* ")
 class Parser:
 
     @classmethod
-    def page_to_class(cls, page, *, language = None, entry_only = False):
+    def page_to_class(cls, page, *, language = None):
         if language is None:
             raise ValueError("language: None")
 
@@ -36,14 +37,7 @@ class Parser:
         redirect = page.find("redirect")
 
         if redirect is not None:
-            if entry_only:
-                return None
-            else:
-                return {
-                    "type": "redirection",
-                    "source": title,
-                    "target": redirect.attrib["title"]
-                }
+            return Redirection(source = title, target = redirect.attrib["title"])
 
         revision = page.find("revision")
         text = revision.find("text").text
@@ -53,11 +47,7 @@ class Parser:
 
         text = "".join(filter(lambda c: ord(c) < 0x10000, text))
 
-        return {
-            "type": "entry",
-            "title": title,
-            "mediawiki": text
-        }
+        return Entry(title = title, mediawiki = text)
 
     @classmethod
     def interpret_mediawiki(cls, mediawiki, *, language = None):
@@ -101,6 +91,41 @@ class Parser:
             text = text[: match.start()] + language.link_to_surface(match) + text[match.end() :]
 
         return text
+
+    @classmethod
+    def extract_links(cls, mediawiki, *, language = None):
+        if language is None:
+            ValueError("language: None")
+
+        text = mediawiki
+        links = []
+
+        while True:
+            match = re.search(RE_LINK, text)
+
+            if match is None:
+                break
+
+            text = text[: match.start()] + language.link_to_surface(match) + text[match.end() :]
+            title = language.link_to_title(match)
+
+            if title is not None:
+                links.append(title)
+
+        return links
+
+    @classmethod
+    def extract_categories(cls, mediawiki, *, language = None):
+        links = cls.extract_links(mediawiki, language = language)
+        categories = []
+
+        for link in links:
+            category = language.extract_category(link)
+
+            if category is not None:
+                categories.append(category)
+
+        return categories
 
     @classmethod
     def to_plain_text(cls, mediawiki, *, language = None):

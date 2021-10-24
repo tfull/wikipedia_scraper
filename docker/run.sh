@@ -9,3 +9,6 @@ wscraper status
 wscraper set --language japanese
 wscraper status
 wscraper rename old new
+wscraper switch new
+
+python code.py

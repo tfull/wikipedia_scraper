@@ -3,8 +3,10 @@
 
 import re
 
+from .language_base import *
 
-class English:
+
+class English(LanguageBase):
 
     exclusive_title = [
         "Media",

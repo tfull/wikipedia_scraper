@@ -276,7 +276,7 @@ class Config:
         self.config = self.load_config_by_name(name)
         self.root_config = self.load_root_config()
         self.root_status = self.load_root_status()
-        self.path = os.path.join(Constant.root_directory, f"{self.name}.config.json")
+        self.path = os.path.join(Constant.wikipedia_directory, f"{self.name}.config.json")
 
     def save(self):
         FileManager.save_json(self.path, self.config)
@@ -333,4 +333,4 @@ class Config:
         return wikipedia_xml
 
     def get_wikipedia_xml_directory(self, *, must = True):
-        return os.path.join(self.wikipedia_directory, f"{self.name}")
+        return os.path.join(Constant.wikipedia_directory, f"{self.name}")
