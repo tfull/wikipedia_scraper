@@ -24,7 +24,7 @@ pip install wscraper
 
 ## How to Work (Command)
 
-### Checking Console Commands
+### Check Console Commands
 
 Please run this command.
 
@@ -34,7 +34,7 @@ wscraper --help
 
 Executable commands to be listed.
 
-### Initialization
+### Initialize
 
 For start, you have to execute this command.  
 It creates necessary directory and files.
@@ -46,7 +46,7 @@ wscraper initialize
 wscraper root directory is created at `$HOME/.wscraper`.  
 If you change this path, please set environment `WSCRAPER_ROOT`.
 
-### Setting Global Parameters
+### Set Global Parameters
 
 ```shell
 wscraper root set --language japanese --page_chunk 1000
@@ -59,7 +59,7 @@ wscraper root set --language japanese --page_chunk 1000
 
 See `wscraper root set -h`
 
-### Importing a Wikipedia XML File
+### Import a Wikipedia XML File
 
 A file wikipedia.xml assumes like `(lang)wiki-(date)-pages-articles-multistream.xml`
 
@@ -70,7 +70,7 @@ wscraper import /path/to/wikipedia.xml --name my_wp
 
 See `wscraper import -h`.
 
-### Checking Wikipedia Resources
+### Check Wikipedia Resources
 
 It can check Wikipedia corpus resources.
 
@@ -85,13 +85,13 @@ Available wikipedia:
   - my_wp
 ```
 
-### Switching Current Corpus
+### Switch Current Corpus
 
 ```shell
 wscraper switch my_wp
 ```
 
-### Checking the Status of Current Corpus
+### Check the Status of Current Corpus
 
 ```shell
 wscraper status
@@ -104,23 +104,39 @@ current: my_wp
 language [default]: japanese
 ```
 
-### Setting Parameters for Current Corpus
+### Set Parameters for Current Corpus
 
 Required parameters should be set for current corpus.
 
-```
+```shell
 wscraper set --language english
 ```
 
 parameters:
 - `language`
 
-### Unsetting Parameters
+### Unset Parameters
 
 You can delete parameters by running following command.
 
-```
+```shell
 wscraper unset --language
+```
+
+### Rename a Corpus Name
+
+You can rename a corpus name from `$source` to `$target`.
+
+```shell
+wscraper rename $source $target
+```
+
+### Delete a Corpus
+
+When a corpus (example: `$target`) is unnecessary, it can be removed.
+
+```shell
+wscraper delete $target
 ```
 
 ## How to Work (Python)
