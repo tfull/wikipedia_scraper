@@ -176,18 +176,23 @@ class Config:
 
         s = os.path.join(Constant.wikipedia_directory, source)
         sc = os.path.join(Constant.wikipedia_directory, f"{source}.config.json")
+        sx = os.path.join(Constant.wikipedia_directory, f"{source}.xml")
 
         if not os.path.isdir(s) or not os.path.isfile(sc):
             raise WScraperConfigError(f"no such wikipedia corpus: \"{source}\"")
 
         t = os.path.join(Constant.wikipedia_directory, target)
         tc = os.path.join(Constant.wikipedia_directory, f"{target}.config.json")
+        tx = os.path.join(Constant.wikipedia_directory, f"{target}.xml")
 
         if os.path.exists(t) or os.path.exists(tc):
             raise WScraperConfigError(f"Wikipedia corpus {target} already exists.")
 
         shutil.move(s, t)
         shutil.move(sc, tc)
+
+        if os.path.isfile(sx):
+            shutil.move(sx, tx)
 
         sys.stdout.write(f"rename: {source} -> {target}\n")
 
@@ -197,10 +202,13 @@ class Config:
 
         t = os.path.join(Constant.wikipedia_directory, target)
         tc = os.path.join(Constant.wikipedia_directory, f"{target}.config.json")
+        tx = os.path.join(Constant.wikipedia_directory, f"{target}.xml")
 
         if os.path.isdir(t) and os.path.isfile(tc):
             shutil.rmtree(t)
             os.remove(tc)
+            if os.path.isfile(tx):
+                os.remove(tx)
             sys.stdout.write(f"delete: {target}\n")
         else:
             raise WScraperConfigError(f"no such wikipedia corpus: \"{target}\"")

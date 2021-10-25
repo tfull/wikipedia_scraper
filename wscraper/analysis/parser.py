@@ -37,7 +37,13 @@ class Parser:
         redirect = page.find("redirect")
 
         if redirect is not None:
-            return Redirection(source = title, target = redirect.attrib["title"])
+            target = redirect.attrib["title"]
+
+            for rm in language.exclusive_title:
+                if target.startswith(rm + ":"):
+                    return None
+
+            return Redirection(source = title, target = target)
 
         revision = page.find("revision")
         text = revision.find("text").text
