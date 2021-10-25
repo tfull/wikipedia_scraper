@@ -53,7 +53,7 @@ def command():
         "list": command_list
     }
 
-    if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:
+    if len(sys.argv) < 2 or sys.argv[1] in ["help", "-h", "--help"]:
         sys.stderr.write(f"{help_string}\n")
         sys.exit(1)
 

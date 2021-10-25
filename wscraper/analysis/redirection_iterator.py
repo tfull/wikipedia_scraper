@@ -5,7 +5,7 @@ from ..page import *
 from .both_iterator import *
 
 
-class EntryIterator:
+class RedirectionIterator:
 
     def __init__(self, name = None, *, language = None):
         self.both_iterator = BothIterator(name, language = language)
@@ -19,5 +19,5 @@ class EntryIterator:
         while True:
             page = next(self.both_iterator)
 
-            if page is not None and type(page) == Entry:
+            if page is not None and type(page) == Redirection:
                 return page
