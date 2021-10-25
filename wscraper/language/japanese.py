@@ -1,8 +1,10 @@
 # Copyright (c) 2021 T.Furukawa
 # This software is released under the MIT License, see LICENSE.
 
+from .language_base import *
 
-class Japanese:
+
+class Japanese(LanguageBase):
 
     exclusive_title = [
         "メディア",
@@ -82,6 +84,21 @@ class Japanese:
                 return e1
         else:
             return ""
+
+    @classmethod
+    def link_to_title(cls, re_link_match):
+        entities = re_link_match.group(1).split("|")
+
+        if len(entities) == 1:
+            return entities[0]
+        elif len(entities) == 2:
+            e0, e1 = entities
+            if e0.startswith("ファイル:") or e0.startswith("File:"):
+                return None
+            else:
+                return e1
+        else:
+            return None
 
     @classmethod
     def document_to_sentences(cls, document):

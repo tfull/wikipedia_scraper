@@ -1,6 +1,6 @@
-# wikipedia-scraper
+# Wikipedia Scraper
 
-Parsing, tokenizing and creating language model using a Wikipedia dump XML file.
+Parsing, tokenizing text using a Wikipedia dump XML file.
 
 ## Author
 
@@ -22,81 +22,57 @@ pip install wscraper
 - english
   - English Wikipedia
 
-### tokenizer
+## How to Work (Command)
 
-- mecab
-  - Modules `pip install mecab-python unidic-lite` are required.
-  - Some apt packages `libmecab-dev libmecab2 swig` are required for Ubuntu.
-  - Japanese tokenizer
-- janome
-  - A module `pip install janome` is required.
-  - Japanese tokenizer
-- nltk
-  - A module `pip install nltk` is required.
-  - English tokenizer
-
-### model
-
-- word2vec
-  - A module `pip install gensim` is required.
-- doc2vec
-  - A module `pip install gemsim` is required.
-- word_frequency
-  - word frequency and word document frequency
-
-### database
-
-A module `pip install sqlalchemy` is required.
-
-## How to Work
-
-### 0. Checking Console Commands
+### Check Console Commands
 
 Please run this command.
 
 ```shell
-wscraper help
+wscraper --help
 ```
 
-Available commands to be listed.
+Executable commands to be listed.
 
-### 1. Initialization
+### Initialize
+
+For start, you have to execute this command.  
+It creates necessary directory and files.
 
 ```shell
 wscraper initialize
 ```
 
-### 2. Creating New Task
+wscraper root directory is created at `$HOME/.wscraper`.  
+If you change this path, please set environment `WSCRAPER_ROOT`.
 
-This example make task named `my_task`.
-
-```shell
-wscraper new my_task
-```
-
-### 3. Using Created Task
+### Set Global Parameters
 
 ```shell
-wscraper switch my_task
+wscraper root set --language japanese --page_chunk 1000
 ```
 
-Current task is switched to `my_task`.
+- `language`
+  - Default language. If you do not set the parameter `language` for each corpus, this default language is used.
+- `page_chunk`
+  - A Wikipedia dump XML file has large text data as many pages. For analysis, it is separated to several small files because of memory efficiency.
 
-### 4. Importing A Wikipedia XML File
+See `wscraper root set -h`
 
-This operation is independent of each task 2, 3.
+### Import a Wikipedia XML File
 
 A file wikipedia.xml assumes like `(lang)wiki-(date)-pages-articles-multistream.xml`
 
 ```shell
+wscraper import /path/to/sample.xml
 wscraper import /path/to/wikipedia.xml --name my_wp
 ```
 
-### 5. Checking Tasks and Wikipedia Resources
+See `wscraper import -h`.
 
-This command is also independent of task 2, 3.
+### Check Wikipedia Resources
 
-It can check tasks and Wikipedia resources.
+It can check Wikipedia corpus resources.
 
 ```shell
 wscraper list
@@ -104,113 +80,94 @@ wscraper list
 
 output
 ```text
-Available task:
-  - my_task
-
 Available wikipedia:
+  - sample
   - my_wp
 ```
 
-### 6. Setting Parameters for Current Task
+### Switch Current Corpus
 
-Required parameters should be set for current task `my_task`.
-
-This example uses 2 threads, Japanese Wikipedia.
-
-```
-wscraper set --wikipedia my_wp --worker 2 --language japanese
+```shell
+wscraper switch my_wp
 ```
 
-### 7. Unsetting Parameters
+### Check the Status of Current Corpus
 
-If you mistake at work 6, you can delete parameters by running following command.
-
-(Example of the parameter `worker`.)
-
-```
-wscraper unset --worker
-```
-
-### 7. Checking Status of Current Task
-
-```
+```shell
 wscraper status
 ```
 
-Current task name and each parameter is printed.
+output
+```text
+current: my_wp
 
-### 8. Setting Tokenizer for Current Task
-
-This example uses tokenizer `MeCab`. Tokenizer name is `mecab`
-
-```
-wscraper tokenizer mecab
+language [default]: japanese
 ```
 
-### 9. Creating Model for Current Task
+### Set Parameters for Current Corpus
 
-This example is going to create a model.
+Required parameters should be set for current corpus.
 
-Its algorithm is `word2vec` and name is `my_model`.
-
-```
-wscraper model new my_model word2vec
+```shell
+wscraper set --language english
 ```
 
-### 10. Deleting Model
+parameters:
+- `language`
 
-If you mistake at work 9, you can delete model by indicating name.
+### Unset Parameters
 
-```
-wscraper model delete my_model
-```
+You can delete parameters by running following command.
 
-### 11. Building Model
-
-```
-wscraper model build my_model
+```shell
+wscraper unset --language
 ```
 
-### 12. Editing Tokenizer Arguments
+### Rename a Corpus Name
 
-This is not supported yet.
+You can rename a corpus name from `$source` to `$target`.
 
-Please run python code to reset tokenizer.
+```shell
+wscraper rename $source $target
+```
+
+### Delete a Corpus
+
+When a corpus (example: `$target`) is unnecessary, it can be removed.
+
+```shell
+wscraper delete $target
+```
+
+## How to Work (Python)
+
+Importing iterator classes.
 
 ```python
->>> from wscraper.base import Config
->>> config = Config("my_task")
->>> config.set_tokenizer(method = "tokenizer_method", arguments = { "key1": value1, "key2": value2, ... })
+from wscraper.analysis import *
 ```
 
-### 13. Editing Model Arguments
-
-This is not supported yet for console.
-
-Please run python code.
+You can iterate pages of a corpus by writing this.
 
 ```python
->>> from wscraper.base import Config
->>> config = Config("my_task")
->>> config.update_model_arguments("my_model", { "key1": value1, "key2": value2, ... })
->>> config.delete_model_arguments("my_model", [ "key1", "key2", ...]) # if you want to delete parameters
+# entry
+entry_iterator = EntryIterator()
+# You can specify corpus name and language.
+# If parameter is not given, current Wikipedia corpus is used.
+# >>> EntryIterator(name = "sample", language = "japanese")
+both_iterator = BothIterator()
+redirection_iterator = RedirectionIterator()
+
+for i, b in enumerate(both_iterator):
+    print(f"both: {i}: {type(b)}")
+
+for i, e in enumerate(entry_iterator):
+    print(f"entry {i}: {e.title} {len(e.mediawiki)}")
+
+for i, r in enumerate(redirection_iterator):
+    print(f"redirection: {i}: {r.source} -> {r.target}")
 ```
 
-### 14. Database Migration
-
-Tables of configurated database are created.
-
-```
-wscraper database migrate
-```
-
-### 15. Inserting Records for Database
-
-Records of articles are inserted for tables.
-
-```
-wscraper database seed
-```
 
 ## License
 

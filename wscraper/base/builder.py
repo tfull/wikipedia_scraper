@@ -7,13 +7,14 @@ import glob
 import os
 
 from ..utility import *
-from ..base import *
+from .config import *
+from .wscraper_exception import *
 
 
 class Builder:
 
     @classmethod
-    def command_import(cls, wikipedia_xml, wikipedia_name, move = False, copy = False, reset = False):
+    def command_import(cls, wikipedia_xml, wikipedia_name, *, move = False, copy = False, reset = False, language = None):
         Config.check_root_directory_exists()
 
         if not wikipedia_xml.endswith(".xml"):
@@ -38,7 +39,7 @@ class Builder:
         else:
             os.makedirs(target_directory)
 
-        sys.stdout.write(f"Split Wikipedia XML file {wikipedia_xml} to {target_directory}.\n")
+        sys.stdout.write(f"Split Wikipedia XML file `{wikipedia_xml}` to `{target_directory}`.\n")
         cls.split_to_xmls(wikipedia_xml, target_directory, chunk = Config.load_root_config()["page_chunk"])
         sys.stdout.write("Done!\n")
 
@@ -49,6 +50,13 @@ class Builder:
         elif move:
             new_path = shutil.move(wikipedia_xml, target_directory + ".xml")
             sys.stdout.write(f"File was moved {wikipedia_xml} to {new_path}.\n")
+
+        Config.create_config(wikipedia_name, exist_ok = True)
+        if language is not None:
+            config = Config(wikipedia_name)
+            config.set_language(language)
+            config.save()
+            sys.stdout.write(f"Language {language} is set to {wikipedia_name}.\n")
 
     @classmethod
     def split_to_xmls(cls, xml_path, output_directory, *, chunk = 10000):
