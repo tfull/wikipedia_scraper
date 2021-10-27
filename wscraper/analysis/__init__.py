@@ -7,3 +7,4 @@ from .page_iterator import *
 from .both_iterator import *
 from .entry_iterator import *
 from .redirection_iterator import *
+from .document_iterator import *

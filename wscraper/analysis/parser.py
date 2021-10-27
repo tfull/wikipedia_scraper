@@ -7,21 +7,20 @@ from ..utility import *
 from ..page import *
 
 
-RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
-RE_NOWIKI     = re.compile(r"<nowiki>.*?</nowiki>", re.DOTALL)
-RE_BRACKET_1  = re.compile(r"\{[^\{]*?\}")
-RE_BRACKET_2  = re.compile(r"\{\{([^\{]*?)\}\}")
-RE_REF_SINGLE = re.compile(r"<ref[^>]*/>")
-RE_REF_PAIR   = re.compile(r"<ref[^>]*>.*?</ref>", re.DOTALL)
-RE_PRIME      = re.compile(r"\'{2,}")
-RE_TAG        = re.compile(r"<([a-zA-Z]+)(.*?)?>(.*?)</\1>")
-RE_LINK       = re.compile(r"\[\[([^\[]*?)\]\]")
-RE_SQ         = re.compile(r"\[[^\[]*?\]")
-RE_CHAPTER    = re.compile(r"={2,}(.*?)={2,}")
-RE_LIST       = re.compile(r"\* ")
-
-
 class Parser:
+
+    RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
+    RE_NOWIKI     = re.compile(r"<nowiki>.*?</nowiki>", re.DOTALL)
+    RE_BRACKET_1  = re.compile(r"\{[^\{]*?\}")
+    RE_BRACKET_2  = re.compile(r"\{\{([^\{]*?)\}\}")
+    RE_REF_SINGLE = re.compile(r"<ref[^>]*/>")
+    RE_REF_PAIR   = re.compile(r"<ref[^>]*>.*?</ref>", re.DOTALL)
+    RE_PRIME      = re.compile(r"\'{2,}")
+    RE_TAG        = re.compile(r"<([a-zA-Z]+)(.*?)?>(.*?)</\1>")
+    RE_LINK       = re.compile(r"\[\[([^\[]*?)\]\]")
+    RE_SQ         = re.compile(r"\[[^\[]*?\]")
+    RE_CHAPTER    = re.compile(r"={2,}(.*?)={2,}")
+    RE_LIST       = re.compile(r"\* ")
 
     @classmethod
     def page_to_class(cls, page, *, language = None):
@@ -62,26 +61,26 @@ class Parser:
 
         text = mediawiki
 
-        text = re.sub(RE_COMMENT, "", text)
-        text = re.sub(RE_NOWIKI, "", text)
+        text = re.sub(cls.RE_COMMENT, "", text)
+        text = re.sub(cls.RE_NOWIKI, "", text)
 
         while True:
-            match = re.search(RE_BRACKET_2, text)
+            match = re.search(cls.RE_BRACKET_2, text)
 
             if match is None:
                 break
 
             text = text[: match.start()] + language.bracket_to_surface(match) + text[match.end() :]
 
-        text = re.sub(RE_BRACKET_1, "", text)
-        text = re.sub(RE_REF_SINGLE, "", text)
-        text = re.sub(RE_REF_PAIR, "", text)
-        text = re.sub(RE_PRIME, "", text)
+        text = re.sub(cls.RE_BRACKET_1, "", text)
+        text = re.sub(cls.RE_REF_SINGLE, "", text)
+        text = re.sub(cls.RE_REF_PAIR, "", text)
+        text = re.sub(cls.RE_PRIME, "", text)
 
         text = text.replace("__TOC__", "").replace("&amp;", "&")
 
         while True:
-            match = re.search(RE_TAG, text)
+            match = re.search(cls.RE_TAG, text)
 
             if match is None:
                 break
@@ -89,7 +88,7 @@ class Parser:
             text = text[: match.start()] + language.tag_to_surface(match) + text[match.end() :]
 
         while True:
-            match = re.search(RE_LINK, text)
+            match = re.search(cls.RE_LINK, text)
 
             if match is None:
                 break
@@ -107,7 +106,7 @@ class Parser:
         links = []
 
         while True:
-            match = re.search(RE_LINK, text)
+            match = re.search(cls.RE_LINK, text)
 
             if match is None:
                 break
@@ -148,7 +147,7 @@ class Parser:
             if line.startswith("* "):
                 lines.append(line[2:])
             else:
-                match = re.match(RE_CHAPTER, line)
+                match = re.match(cls.RE_CHAPTER, line)
 
                 if match:
                     pass
@@ -170,7 +169,7 @@ class Parser:
         previous = "*"
 
         for line in lines:
-            match = re.match(RE_CHAPTER, line)
+            match = re.match(cls.RE_CHAPTER, line)
 
             if match:
                 paragraphs.append((previous, "\n".join(lines_stock)))
