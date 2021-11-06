@@ -168,6 +168,35 @@ for i, r in enumerate(redirection_iterator):
     print(f"redirection: {i}: {r.source} -> {r.target}")
 ```
 
+For example, you can give iterator a ML model.
+
+```python
+def to_words(x):
+    return x.split()
+
+# return word list for each iteration
+iterator = ArticleIterator(tagger = to_words)
+# If you set `type = dict`, you can get records as dictionary
+# ex: { "title", "ABC...", "article": "eval(to_words(article))" }
+
+# Iterators:
+#   ArticleIterator
+#     - 1 page / record
+#     - dict keys: ["title", "article"]
+#   ParagraphIterator:
+#     - N page / record
+#     - Description like "== A ==" is delimiter of paragraphs.
+#     - dict keys: ["page_title", "paragraph_title", "paragraph"]
+
+# For example, gensim word2vec can interpret this iterator
+
+# from gensim.models.word2vec import Word2Vec
+Word2Vec(iterator)
+
+# You can concatenate iterators to train ML model using CombinedIterator.
+Word2Vec(CombinedIterator(iterator, another_iterator))
+```
+
 
 ## License
 
