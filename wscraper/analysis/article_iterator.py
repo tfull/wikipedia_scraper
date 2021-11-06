@@ -5,15 +5,16 @@ from .parser import *
 from .entry_iterator import *
 
 
-class DocumentIterator:
+class ArticleIterator:
 
-    def __init__(self, name = None, tagger = None, *, language = None):
+    def __init__(self, name = None, tagger = None, *, language = None, type = None):
         self.entry_iterator = EntryIterator(name = name, language = language)
         self.language = self.entry_iterator.both_iterator.language
         self.tagger = tagger
+        self.type = type
 
     def __iter__(self):
-        self.entry_iterator.__iter__()
+        iter(self.entry_iterator)
         return self
 
     def __next__(self):
@@ -24,9 +25,17 @@ class DocumentIterator:
             text = Parser.to_plain_text(entry.mediawiki, language = self.language)
 
             if self.tagger is None:
-                doc = text
+                article = text
             else:
-                doc = self.tagger(text)
+                article = self.tagger(text)
 
-            if doc is not None:
-                return doc
+            if article is not None:
+                if self.type is None:
+                    return article
+                elif self.type == dict:
+                    return {
+                        "title": entry.title,
+                        "article": article
+                    }
+                else:
+                    raise NotImplementedError()

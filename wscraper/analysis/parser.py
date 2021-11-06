@@ -166,14 +166,14 @@ class Parser:
 
         paragraphs = []
         lines_stock = []
-        previous = "*"
+        previous = ""
 
         for line in lines:
             match = re.match(cls.RE_CHAPTER, line)
 
             if match:
                 paragraphs.append((previous, "\n".join(lines_stock)))
-                previous = match.group(1)
+                previous = match.group(1).strip()
                 lines_stock = []
             elif len(line) > 0:
                 if line.startswith("* "):
