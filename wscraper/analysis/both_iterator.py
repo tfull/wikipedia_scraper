@@ -24,7 +24,7 @@ class BothIterator:
                 self.language = Language.get_class(language)
 
     def __iter__(self):
-        self.page_iterator.__iter__()
+        iter(self.page_iterator)
         return self
 
     def __next__(self):

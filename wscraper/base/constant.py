@@ -23,5 +23,3 @@ class Constant:
 
     min_page_chunk = 100
     max_page_chunk = 10 ** 7
-    min_worker = 1
-    max_worker = 64

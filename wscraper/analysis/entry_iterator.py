@@ -11,7 +11,7 @@ class EntryIterator:
         self.both_iterator = BothIterator(name, language = language)
 
     def __iter__(self):
-        self.both_iterator.__iter__()
+        iter(self.both_iterator)
         return self
 
     def __next__(self):
