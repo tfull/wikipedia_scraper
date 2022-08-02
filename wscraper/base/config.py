@@ -133,7 +133,7 @@ class Config:
         if not os.path.isdir(os.path.join(Constant.wikipedia_directory, name)):
             raise WScraperConfigError(f"Wikipedia name {name} does not exist.")
 
-        path = os.path.join(Constant.root_directory, "status.yml")
+        path = os.path.join(Constant.root_directory, "status.json")
         status = FileManager.load_json(path)
         status["current"] = name
         FileManager.save_json(path, status)

@@ -2,7 +2,7 @@ from wscraper.analysis import *
 from wscraper.language import *
 
 
-def tag(x):
+def tagger(x):
     return x.strip().split()
 
 language = Language.get_class("japanese")
@@ -16,5 +16,5 @@ for i, e in enumerate(EntryIterator()):
 for i, r in enumerate(RedirectionIterator()):
     print(f"redirection {i}: {r.source} -> {r.target}")
 
-for i, d in enumerate(DocumentIterator(tagger = tag)):
-    print(f"document {i}: {' '.join(d[:10])[:32]}")
+for i, d in enumerate(ArticleIterator(tagger = tagger)):
+    print(f"article {i}: {' '.join(d[:10])[:32]}")

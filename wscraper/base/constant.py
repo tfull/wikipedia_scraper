@@ -9,8 +9,8 @@ class Constant:
 
     root_directory = os.environ.get("WSCRAPER_ROOT") or os.path.join(os.environ["HOME"], ".wscraper")
 
-    root_config = os.path.join(root_directory, "config.yml")
-    root_status = os.path.join(root_directory, "status.yml")
+    root_config = os.path.join(root_directory, "config.json")
+    root_status = os.path.join(root_directory, "status.json")
 
     wikipedia_directory = os.path.join(root_directory, "wikipedia")
 
